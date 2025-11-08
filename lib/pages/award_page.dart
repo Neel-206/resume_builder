@@ -3,6 +3,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
+import 'package:resume_builder/services/func.dart';
 
 class awardpage extends StatefulWidget {
   final VoidCallback? onNext;
@@ -19,6 +20,7 @@ class _awardpageState extends State<awardpage> {
   final TextEditingController discriptionController = TextEditingController();
   final List<Map<String, dynamic>> awards = [];
   final dbHelper = DatabaseHelper.instance;
+  int pageindex = 1;
   final List<String> month = [
     'January',
     'February',
@@ -363,9 +365,14 @@ class _awardpageState extends State<awardpage> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if (widget.onNext != null) {
-                    widget.onNext!();
-                  }
+                  bool next = func.unlockpage(pageindex);
+              
+              if(next && widget.onNext != null){
+                widget.onNext?.call();// Navigate to next page
+              }
+                  // if (widget.onNext != null) {
+                  //   widget.onNext!();
+                  // }
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 62),

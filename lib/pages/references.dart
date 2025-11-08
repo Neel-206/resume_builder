@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:resume_builder/services/func.dart';
 import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
 
@@ -21,7 +22,7 @@ class _ReferencesState extends State<References> {
   final TextEditingController companyController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-
+  final int pageindex = 7;
   @override
   void initState() {
     super.initState();
@@ -29,7 +30,9 @@ class _ReferencesState extends State<References> {
   }
 
   void _loadReferences() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAppReferences);
+    final allRows = await dbHelper.queryAllRows(
+      DatabaseHelper.tableAppReferences,
+    );
     if (mounted) {
       setState(() {
         referencesList.clear();
@@ -75,7 +78,11 @@ class _ReferencesState extends State<References> {
 
   void _saveAndNext() {
     _addReference(); // Save any pending data
-    widget.onNext?.call();
+    bool next = func.unlockpage(pageindex);
+
+    if (next && widget.onNext != null) {
+      widget.onNext?.call(); // Navigate to next page
+    }
   }
 
   @override

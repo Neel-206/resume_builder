@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:resume_builder/services/database_helper.dart';
+import 'package:resume_builder/services/func.dart';
 
 class profilepage extends StatefulWidget {
   final VoidCallback? onNext;
@@ -24,7 +25,8 @@ class _profilepageState extends State<profilepage> {
   final TextEditingController pincodeController = TextEditingController();
   final TextEditingController linkedinController = TextEditingController();
   final TextEditingController githubController = TextEditingController();
-
+  final int pageindex = 0;
+  
   bool showAdditionalFields = false;
   final dbHelper = DatabaseHelper.instance;
   final TextInputType? keyboardType = null;
@@ -312,7 +314,11 @@ class _profilepageState extends State<profilepage> {
           onPressed: () {
             if (form_Key.currentState?.validate() ?? false) {
               _saveProfileData();
-              widget.onNext?.call(); // Navigate to next page
+             bool next = func.unlockpage(pageindex);
+              
+              if(next && widget.onNext != null){
+                widget.onNext?.call();// Navigate to next page
+              }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

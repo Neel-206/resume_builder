@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:resume_builder/services/func.dart';
 import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
 
@@ -25,7 +26,7 @@ class _EducationState extends State<Education> {
   final List<Map<String, dynamic>> educationList = [];
   final dbHelper = DatabaseHelper.instance;
   final form_Key = GlobalKey<FormState>();
-
+  final int pageindex = 3;
   @override
   void initState() {
     super.initState();
@@ -439,7 +440,10 @@ class _EducationState extends State<Education> {
               child: ElevatedButton(
                 onPressed: () async {
                   if(educationList.isNotEmpty) {
-                    widget.onNext?.call();
+                     bool next = func.unlockpage(pageindex);
+                     if(next && widget.onNext != null){
+                        widget.onNext?.call();// Navigate to next page
+                     }
                   }else{
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

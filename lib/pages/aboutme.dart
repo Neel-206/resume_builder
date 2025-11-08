@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:resume_builder/services/func.dart';
 import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
 
@@ -17,7 +18,7 @@ class _AboutmeState extends State<Aboutme> {
   final TextEditingController aboutController = TextEditingController();
   final form_Key = GlobalKey<FormState>();
   final dbHelper = DatabaseHelper.instance;
-
+  int pageindex = 2;
   @override
   void initState() {
     super.initState();
@@ -158,7 +159,11 @@ class _AboutmeState extends State<Aboutme> {
           onPressed: (){
             if (form_Key.currentState?.validate() ?? false) {
               _saveAboutData();
-              widget.onNext?.call();
+               bool next = func.unlockpage(pageindex);
+              
+              if(next && widget.onNext != null){
+                widget.onNext?.call();// Navigate to next page
+              }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content:Text('Please fill required fields correctly.')),

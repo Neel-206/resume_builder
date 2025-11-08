@@ -3,6 +3,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
 import 'package:resume_builder/services/database_helper.dart';
+import 'package:resume_builder/services/func.dart';
 
 class Hobbies extends StatefulWidget {
   final VoidCallback? onNext;
@@ -34,9 +35,10 @@ class _HobbiesState extends State<Hobbies> {
     'Video Game',
     'Writing',
     'Yoga',
-    'Coding'
+    'Coding',
   ];
   String? selectedHobby;
+  final int pageindex = 4;
 
   @override
   void initState() {
@@ -56,7 +58,9 @@ class _HobbiesState extends State<Hobbies> {
   }
 
   void _addHobby() async {
-    if (selectedHobby != null && selectedHobby != 'None' && !hobbiesList.any((h) => h['name'] == selectedHobby)) {
+    if (selectedHobby != null &&
+        selectedHobby != 'None' &&
+        !hobbiesList.any((h) => h['name'] == selectedHobby)) {
       Map<String, dynamic> row = {'name': selectedHobby};
       final id = await dbHelper.insert(DatabaseHelper.tableHobbies, row);
       row['id'] = id;
@@ -150,7 +154,7 @@ class _HobbiesState extends State<Hobbies> {
                             end: Alignment.bottomRight,
                           ),
                         ),
-      
+
                         child: Column(
                           children: [
                             Row(
@@ -177,7 +181,12 @@ class _HobbiesState extends State<Hobbies> {
                                             ),
                                             gradient: LinearGradient(
                                               colors: [
-                                                Color.fromARGB(255,152,146,244,),
+                                                Color.fromARGB(
+                                                  255,
+                                                  152,
+                                                  146,
+                                                  244,
+                                                ),
                                                 Color(0xffe4d8fd),
                                                 Color(0xff9b8fff),
                                               ],
@@ -189,7 +198,9 @@ class _HobbiesState extends State<Hobbies> {
                                         hint: Text(
                                           'Select Hobbies',
                                           style: TextStyle(
-                                            color: Colors.white.withOpacity(0.8),
+                                            color: Colors.white.withOpacity(
+                                              0.8,
+                                            ),
                                           ),
                                         ),
                                         value: selectedHobby,
@@ -213,7 +224,7 @@ class _HobbiesState extends State<Hobbies> {
                               ],
                             ),
                             SizedBox(height: 12),
-                             if (hobbiesList.isNotEmpty) ...[
+                            if (hobbiesList.isNotEmpty) ...[
                               Text(
                                 'Added Hobbie',
                                 style: TextStyle(
@@ -222,7 +233,7 @@ class _HobbiesState extends State<Hobbies> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              SizedBox(height: 10,),
+                              SizedBox(height: 10),
                               ...hobbiesList.asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final Hobbie1 = entry.value;
@@ -269,7 +280,6 @@ class _HobbiesState extends State<Hobbies> {
                                 );
                               }),
                             ],
-                          
                           ],
                         ),
                       ),
@@ -281,15 +291,16 @@ class _HobbiesState extends State<Hobbies> {
           ),
         ),
       ),
-       floatingActionButton: SizedBox(
+      floatingActionButton: SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
         child: Row(
           children: [
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if (widget.onNext != null) {
-                    widget.onNext!();
+                  bool next = func.unlockpage(pageindex);
+                  if (next && widget.onNext != null) {
+                    widget.onNext?.call(); // Navigate to next page
                   }
                 },
                 style: ElevatedButton.styleFrom(

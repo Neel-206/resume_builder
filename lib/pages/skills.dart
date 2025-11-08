@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:resume_builder/pages/choose_template.dart';
+import 'package:resume_builder/services/func.dart';
 import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
 
@@ -19,13 +20,13 @@ class _SkillsState extends State<Skills> {
   final List<Map<String, dynamic>> skills = [];
   String selectedProficiency = 'Intermediate';
   final dbHelper = DatabaseHelper.instance;
-
   final List<String> proficiencyLevels = [
     'Beginner',
     'Intermediate',
     'Advanced',
     'Expert',
   ];
+  final int pageindex = 0;
 
   @override
   void initState() {
@@ -342,9 +343,21 @@ class _SkillsState extends State<Skills> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if (widget.onNext != null) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => ChooseTemplate()),
+                  if (skills.isNotEmpty) {
+                    bool next = func.unlockpage(pageindex);
+
+                    if (next && widget.onNext != null) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ChooseTemplate(),
+                        ),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Please enter at list one Skill...'),
+                      ),
                     );
                   }
                 },

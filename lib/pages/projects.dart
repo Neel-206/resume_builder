@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:resume_builder/services/func.dart';
 import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
 
@@ -21,6 +22,7 @@ class _ProjectsState extends State<Projects> {
   final List<Map<String, dynamic>> projects = [];
   final dbHelper = DatabaseHelper.instance;
   final form_Key = GlobalKey<FormState>();
+  final int pageindex = 6;
 
   @override
   void initState() {
@@ -355,8 +357,10 @@ class _ProjectsState extends State<Projects> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if (widget.onNext != null) {
-                    widget.onNext!();
+                  bool next = func.unlockpage(pageindex);
+
+                  if (next && widget.onNext != null) {
+                    widget.onNext?.call(); // Navigate to next page
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -428,7 +432,8 @@ class _ProjectsState extends State<Projects> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                    'Please fill all required fields correctly.'),
+                                  'Please fill all required fields correctly.',
+                                ),
                               ),
                             );
                           }

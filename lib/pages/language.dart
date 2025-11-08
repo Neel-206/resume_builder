@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:resume_builder/services/func.dart';
 import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
 
@@ -19,7 +20,8 @@ class _LanguagesState extends State<Languages> {
   bool canRead = false;
   bool canWrite = false;
   bool canSpeak = false;
-
+  final int pageindex = 5;
+  
   @override
   void initState() {
     super.initState();
@@ -55,7 +57,12 @@ class _LanguagesState extends State<Languages> {
       final id = await dbHelper.insert(DatabaseHelper.tableLanguages, row);
       row['id'] = id;
       setState(() {
-        languagesList.add(row..['read'] = canRead..['write'] = canWrite..['speak'] = canSpeak);
+        languagesList.add(
+          row
+            ..['read'] = canRead
+            ..['write'] = canWrite
+            ..['speak'] = canSpeak,
+        );
         languageController.clear();
         canRead = false;
         canWrite = false;
@@ -326,9 +333,7 @@ class _LanguagesState extends State<Languages> {
                                               ],
                                               gradient: LinearGradient(
                                                 colors: [
-                                                  Colors.green.withOpacity(
-                                                    1,
-                                                  ),
+                                                  Colors.green.withOpacity(1),
                                                   Colors.green.withOpacity(
                                                     0.50,
                                                   ),
@@ -347,7 +352,7 @@ class _LanguagesState extends State<Languages> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: 5,),
+                                    SizedBox(width: 5),
                                     if (languagesList[i]['write'])
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(7),
@@ -362,15 +367,13 @@ class _LanguagesState extends State<Languages> {
                                               vertical: 5,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.lightBlue.withOpacity(
-                                                0.25,
-                                              ),
+                                              color: Colors.lightBlue
+                                                  .withOpacity(0.25),
                                               borderRadius:
                                                   BorderRadius.circular(7),
                                               border: Border.all(
-                                                color: Colors.lightBlue.withOpacity(
-                                                  0.3,
-                                                ),
+                                                color: Colors.lightBlue
+                                                    .withOpacity(0.3),
                                                 width: 1.5,
                                               ),
                                               boxShadow: [
@@ -404,7 +407,7 @@ class _LanguagesState extends State<Languages> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: 5,),
+                                    SizedBox(width: 5),
                                     if (languagesList[i]['speak'])
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(7),
@@ -419,15 +422,13 @@ class _LanguagesState extends State<Languages> {
                                               vertical: 5,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.deepPurple.withOpacity(
-                                                0.25,
-                                              ),
+                                              color: Colors.deepPurple
+                                                  .withOpacity(0.25),
                                               borderRadius:
                                                   BorderRadius.circular(7),
                                               border: Border.all(
-                                                color: Colors.deepPurple.withOpacity(
-                                                  0.3,
-                                                ),
+                                                color: Colors.deepPurple
+                                                    .withOpacity(0.3),
                                                 width: 1.5,
                                               ),
                                               boxShadow: [
@@ -464,7 +465,10 @@ class _LanguagesState extends State<Languages> {
                                     IconButton(
                                       onPressed: () {
                                         setState(() {
-                                          _deleteLanguage(languagesList[i]['id'], i);
+                                          _deleteLanguage(
+                                            languagesList[i]['id'],
+                                            i,
+                                          );
                                         });
                                       },
                                       icon: const Icon(
@@ -494,13 +498,16 @@ class _LanguagesState extends State<Languages> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if(languagesList.isNotEmpty) {
-                    widget.onNext?.call();
-                  }else{
+                  if (languagesList.isNotEmpty) {
+                    bool next = func.unlockpage(pageindex);
+
+                    if (next && widget.onNext != null) {
+                      widget.onNext?.call(); // Navigate to next page
+                    }
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content:
-                            Text('Please add at least one language.'),
+                        content: Text('Please add at least one language.'),
                       ),
                     );
                   }

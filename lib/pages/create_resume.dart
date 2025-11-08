@@ -10,7 +10,7 @@ import 'package:resume_builder/pages/profile_pages.dart';
 import 'package:resume_builder/pages/projects.dart';
 import 'package:resume_builder/pages/references.dart';
 import 'package:resume_builder/pages/skills.dart';
-
+import 'package:resume_builder/services/func.dart';
 
 class TabItem {
   final IconData icon;
@@ -122,14 +122,14 @@ class _CreateResumeState extends State<CreateResume> {
                     children: [
                       Icon(
                         tabs[i].icon,
-                        color: selected ? Colors.white : Colors.white70,
+                        color: func.index >= i ? selected ? Colors.white : Colors.white70 : Colors.white10,
                         size: 24,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         tabs[i].label,
                         style: TextStyle(
-                          color: selected ? Colors.white : Colors.white70,
+                          color: func.index >= i ? selected ? Colors.white : Colors.white70 : Colors.white10,
                           fontWeight: FontWeight.w600,
                           fontSize: 18,
                         ),
@@ -155,7 +155,7 @@ class _CreateResumeState extends State<CreateResume> {
                             horizontal: 20,
                             vertical: 12,
                           ),
-                          decoration: BoxDecoration(
+                          decoration: BoxDecoration( // func.index <= i ? null :
                             color: Colors.white.withOpacity(0.25),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
@@ -185,7 +185,7 @@ class _CreateResumeState extends State<CreateResume> {
                   }
                   return GestureDetector(
                     key: tabKeys[i],
-                    onTap: () {
+                    onTap: func.index >= i ?  () {
                       setState(() => currentStep = i);
                       animateToTab(i);
                       if (currentStep == 1) {
@@ -197,7 +197,7 @@ class _CreateResumeState extends State<CreateResume> {
                           curve: Curves.easeInOut,
                         );
                       }
-                    },
+                    } : null,
                     child: tabContent,
                   );
                 }),
