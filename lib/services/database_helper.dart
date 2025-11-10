@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "ResumeMaker.db";
-  static const _databaseVersion = 3;
+  static const _databaseVersion = 4;
 
   // Table names
   static const tableProfile = 'profile';
@@ -17,6 +17,7 @@ class DatabaseHelper {
   static const tableProjects = 'projects';
   static const tableAppReferences = 'app_references';
   static const tableSkills = 'skills';
+  static const tableSavedResumes = 'saved_resumes';
 
   // Singleton class
   DatabaseHelper._privateConstructor();
@@ -144,6 +145,15 @@ class DatabaseHelper {
         proficiency TEXT NOT NULL
       )
     ''',
+    tableSavedResumes: '''
+      CREATE TABLE $tableSavedResumes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fileName TEXT NOT NULL,
+        filePath TEXT NOT NULL,
+        templateName TEXT NOT NULL,
+        createdAt TEXT NOT NULL
+      )
+    ''',
   };
 
   // SQL code to create the database tables
@@ -175,6 +185,15 @@ class DatabaseHelper {
       if (!linkedinExists) await db.execute('ALTER TABLE $tableProfile ADD COLUMN linkedin TEXT');
       if (!githubExists) await db.execute('ALTER TABLE $tableProfile ADD COLUMN github TEXT');
     }
+    if (oldVersion < 4) {
+      // Version 4 adds the saved_resumes table
+      try {
+        await db.execute(_tableCreationScripts[tableSavedResumes]!);
+      } catch (e) {
+        print('Error creating saved_resumes table: $e');
+        // Table might already exist, which is fine
+      }
+    }
     // Add other migration logic for future versions here
   }
 
@@ -203,6 +222,12 @@ class DatabaseHelper {
   Future<int> delete(String table, int id) async {
     Database db = await instance.database;
     return await db.delete(table, where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Deletes a row by file path from the saved_resumes table
+  Future<int> deleteByPath(String table, String filePath) async {
+    Database db = await instance.database;
+    return await db.delete(table, where: 'filePath = ?', whereArgs: [filePath]);
   }
 
   /// A generic method to clear all data from a table.

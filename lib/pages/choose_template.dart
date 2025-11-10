@@ -94,6 +94,17 @@ class _ChooseTemplateState extends State<ChooseTemplate> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                Text(
+                  'Select a professional template to craft your resume',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    textStyle: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenWidth * 0.042,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),

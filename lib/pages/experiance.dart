@@ -50,7 +50,22 @@ class _ExperienceState extends State<Experience> {
     final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableExperience);
     if (mounted) {
       setState(() {
-        experiences.addAll(allRows);
+        experiences.clear();
+        if (allRows.isEmpty) {
+          // If no experience entries, add a "Fresher" entry
+          Map<String, dynamic> fresherEntry = {
+            'company': 'Fresher',
+            'position': '',
+            'fromYear': '',
+            'fromMonth': '',
+            'toYear': '',
+            'toMonth': '',
+            'description': '',
+          };
+          experiences.add(fresherEntry);
+        } else {
+          experiences.addAll(allRows);
+        }
       });
     }
   }
@@ -78,6 +93,12 @@ class _ExperienceState extends State<Experience> {
     if (row.values.any(
       (element) => element != null && element.toString().isNotEmpty,
     )) {
+      // Remove the "Fresher" entry if it exists
+      if (experiences.length == 1 && experiences[0]['company'] == 'Fresher') {
+        setState(() {
+          experiences.clear();
+        });
+      }
       final id = await dbHelper.insert(DatabaseHelper.tableExperience, row);
       row['id'] = id;
       setState(() {
@@ -103,6 +124,19 @@ class _ExperienceState extends State<Experience> {
     await dbHelper.delete(DatabaseHelper.tableExperience, id);
     setState(() {
       experiences.removeAt(index);
+      // If no experiences left, show "Fresher"
+      if (experiences.isEmpty) {
+        Map<String, dynamic> fresherEntry = {
+          'company': 'Fresher',
+          'position': '',
+          'fromYear': '',
+          'fromMonth': '',
+          'toYear': '',
+          'toMonth': '',
+          'description': '',
+        };
+        experiences.add(fresherEntry);
+      }
     });
   }
 

@@ -5,11 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:resume_builder/services/resume_storage.dart';
 
 class PdfPreviewPage extends StatelessWidget {
   final String path;
+  final String templateName;
 
-  const PdfPreviewPage({super.key, required this.path});
+  const PdfPreviewPage({
+    super.key, 
+    required this.path,
+    this.templateName = 'Default'
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -229,17 +235,30 @@ class PdfPreviewPage extends StatelessWidget {
                         child: InkWell(
                           onTap: () async {
                             try {
-                              final file = File(path);
+                              // First save the resume
+                              final savedPath = await ResumeStorage.saveResume(path, templateName);
+                              
+                              // Then print it
+                              final file = File(savedPath);
                               final Uint8List bytes = await file.readAsBytes();
                               await Printing.layoutPdf(
                                 onLayout: (format) async => bytes,
                                 name: 'resume.pdf',
                               );
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Resume saved and ready for printing!'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Failed to print file: $e'),
+                                    content: Text('Failed to process file: $e'),
                                   ),
                                 );
                               }
@@ -273,6 +292,7 @@ class PdfPreviewPage extends StatelessWidget {
                   ),
                 ),
               ),
+              
             ],
           ),
         ),

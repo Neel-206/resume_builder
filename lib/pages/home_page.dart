@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resume_builder/pages/create_resume.dart';
+import 'package:resume_builder/pages/show_resume_new.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -212,7 +214,14 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 SizedBox(height: screenHeight * 0.025),
                                 ElevatedButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ShowResume(),
+                                      ),
+                                    );
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     minimumSize: Size(
                                       double.infinity,
@@ -247,11 +256,11 @@ class _HomePageState extends State<HomePage> {
                                       SizedBox(width: screenWidth * 0.05),
                                       Expanded(
                                         child: Text(
-                                          'View All Resumes',
+                                          'Resume Library',
                                           style: TextStyle(
                                             color: Colors.black87,
                                             overflow: TextOverflow.ellipsis,
-                                            fontSize: screenWidth * 0.04,
+                                            fontSize: screenWidth * 0.045,
                                           ),
                                         ),
                                       ),

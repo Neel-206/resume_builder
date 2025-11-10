@@ -408,66 +408,67 @@ class ClassicTemplate {
     );
     mainY += 15;
 
-    checkMainPageBreak(50, isSectionHeader: true);
-    page = getPageAtIndex(mainPageIndex);
-    graphics = page.graphics;
-    graphics.drawString(
-      'PROJECTS',
-      sectionTitleFont,
-      bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
-    );
-    mainY += 22;
-
-    for (final project in projectsList) {
-      checkMainPageBreak(100);
+    if (projectsList.isNotEmpty) {
+      checkMainPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(mainPageIndex);
       graphics = page.graphics;
       graphics.drawString(
-        project.name ?? 'Project Name',
-        jobTitleFont,
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 16),
-        brush: PdfBrushes.black,
+        'PROJECTS',
+        sectionTitleFont,
+        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
       );
-      mainY += 16;
-      graphics.drawString(
-        project.role ?? 'Role',
-        bodyFont,
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
-        brush: PdfBrushes.black,
-      );
-      mainY += 14;
-      mainY = _drawWrappedText(
-        graphics: graphics,
-        text: project.description ?? 'Project Description',
-        font: bodyFont,
-        x: mainContentX,
-        y: mainY,
-        maxWidth: mainContentWidth,
-        lineHeight: 13,
-      );
-      graphics.drawString(
-        'Technologies: ${project.technologies ?? 'N/A'}',
-        bodyFont,
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
-        brush: PdfBrushes.darkGray,
-      );
-      mainY += 14;
-      graphics.drawString(
-        'Link: ${project.link ?? 'N/A'}',
-        bodyFont,
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
-        brush: PdfBrushes.darkGray,
-      );
-      mainY += 14;
-      graphics.drawString(
-        'Year: ${project.year ?? 'N/A'}',
-        bodyFont,
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
-        brush: PdfBrushes.darkGray,
-      );
-      mainY += 20;
-    }
+      mainY += 22;
 
+      for (final project in projectsList) {
+        checkMainPageBreak(100);
+        page = getPageAtIndex(mainPageIndex);
+        graphics = page.graphics;
+        graphics.drawString(
+          project.name ?? 'Project Name',
+          jobTitleFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 16),
+          brush: PdfBrushes.black,
+        );
+        mainY += 16;
+        graphics.drawString(
+          project.role ?? 'Role',
+          bodyFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
+          brush: PdfBrushes.black,
+        );
+        mainY += 14;
+        mainY = _drawWrappedText(
+          graphics: graphics,
+          text: project.description ?? 'Project Description',
+          font: bodyFont,
+          x: mainContentX,
+          y: mainY,
+          maxWidth: mainContentWidth,
+          lineHeight: 13,
+        );
+        graphics.drawString(
+          'Technologies: ${project.technologies ?? 'N/A'}',
+          bodyFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
+          brush: PdfBrushes.darkGray,
+        );
+        mainY += 14;
+        graphics.drawString(
+          'Link: ${project.link ?? 'N/A'}',
+          bodyFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
+          brush: PdfBrushes.darkGray,
+        );
+        mainY += 14;
+        graphics.drawString(
+          'Year: ${project.year ?? 'N/A'}',
+          bodyFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
+          brush: PdfBrushes.darkGray,
+        );
+        mainY += 20;
+      }
+    }
     checkMainPageBreak(50, isSectionHeader: true);
     page = getPageAtIndex(mainPageIndex);
     graphics = page.graphics;
@@ -479,42 +480,53 @@ class ClassicTemplate {
     );
     mainY += 22;
 
-    for (final exp in experienceList) {
-      checkMainPageBreak(100);
-      page = getPageAtIndex(mainPageIndex);
-      graphics = page.graphics;
+    if (experienceList.isEmpty) {
+      // Show "Fresher" when no experience is added
       graphics.drawString(
-        exp.position ?? 'Position',
+        'Fresher',
         jobTitleFont,
         bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 16),
         brush: PdfBrushes.black,
       );
-      mainY += 16;
-      graphics.drawString(
-        exp.company ?? 'Company Name',
-        bodyFont,
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
-        brush: PdfBrushes.black,
-      );
-      mainY += 14;
-      final location = 'City, Country';
-      graphics.drawString(
-        '${exp.fromYear ?? 'YYYY'} - ${exp.toYear ?? 'YYYY'}  /  $location',
-        bodyFont,
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
-        brush: PdfBrushes.black,
-      );
-      mainY += 16;
-      mainY = _drawWrappedText(
-        graphics: graphics,
-        text: exp.description ?? '',
-        font: bodyFont,
-        x: mainContentX,
-        y: mainY,
-        maxWidth: mainContentWidth,
-        lineHeight: 13,
-      );
-      mainY += 15;
+      mainY += 30;
+    } else {
+      for (final exp in experienceList) {
+        checkMainPageBreak(100);
+        page = getPageAtIndex(mainPageIndex);
+        graphics = page.graphics;
+        graphics.drawString(
+          exp.position ?? 'Position',
+          jobTitleFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 16),
+          brush: PdfBrushes.black,
+        );
+        mainY += 16;
+        graphics.drawString(
+          exp.company ?? 'Company Name',
+          bodyFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
+          brush: PdfBrushes.black,
+        );
+        mainY += 14;
+        final location = 'City, Country';
+        graphics.drawString(
+          '${exp.fromYear ?? 'YYYY'} - ${exp.toYear ?? 'YYYY'}  /  $location',
+          bodyFont,
+          bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 14),
+          brush: PdfBrushes.black,
+        );
+        mainY += 16;
+        mainY = _drawWrappedText(
+          graphics: graphics,
+          text: exp.description ?? '',
+          font: bodyFont,
+          x: mainContentX,
+          y: mainY,
+          maxWidth: mainContentWidth,
+          lineHeight: 13,
+        );
+        mainY += 15;
+      }
     }
 
     checkMainPageBreak(50, isSectionHeader: true);

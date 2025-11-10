@@ -42,7 +42,12 @@ class _ReferencesState extends State<References> {
   }
 
   void _addReference() async {
-    if (nameController.text.trim().isNotEmpty) {
+    // Allow adding reference even if only some fields are filled
+    if (nameController.text.trim().isNotEmpty || 
+        relationshipController.text.trim().isNotEmpty ||
+        companyController.text.trim().isNotEmpty ||
+        phoneController.text.trim().isNotEmpty ||
+        emailController.text.trim().isNotEmpty) {
       Map<String, dynamic> row = {
         'name': nameController.text,
         'relationship': relationshipController.text,

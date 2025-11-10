@@ -32,21 +32,24 @@ class _ProjectsState extends State<Projects> {
 
   void _loadProjects() async {
     final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProjects);
-    setState(() {
-      projects.addAll(allRows);
-    });
+    if (mounted) {  // Check if widget is still mounted before calling setState
+      setState(() {
+        projects.addAll(allRows);
+      });
+    }
   }
 
-  // @override
-  // void dispose() {
-  //   nameController.dispose();
-  //   roleController.dispose();
-  //   descController.dispose();
-  //   techController.dispose();
-  //   linkController.dispose();
-  //   yearController.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    // Properly dispose of all controllers
+    nameController.dispose();
+    roleController.dispose();
+    descController.dispose();
+    techController.dispose();
+    linkController.dispose();
+    yearController.dispose();
+    super.dispose();
+  }
 
   void _addProject() async {
     Map<String, dynamic> project = {

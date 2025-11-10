@@ -615,15 +615,16 @@ class UniqueTemplate {
           15;
     }
 
+
+    // -- Awards Section --
+    if (awardsList.isNotEmpty) {
+
     graphics.drawLine(
       PdfPen(PdfColor(0, 0, 0), width: 1.5),
       Offset(mainContentX, mainY),
       Offset(mainContentX + mainContentWidth, mainY),
     );
     mainY += 5;
-
-    // -- Awards Section --
-    if (awardsList.isNotEmpty) {
       checkMainPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(mainPageIndex);
       graphics = page.graphics;
@@ -702,18 +703,27 @@ class UniqueTemplate {
     mainY += 5;
 
     // -- Experience Section --
-    if (experienceList.isNotEmpty) {
-      checkMainPageBreak(50, isSectionHeader: true);
-      page = getPageAtIndex(mainPageIndex);
-      graphics = page.graphics;
+    checkMainPageBreak(50, isSectionHeader: true);
+    page = getPageAtIndex(mainPageIndex);
+    graphics = page.graphics;
 
+    graphics.drawString(
+      'EXPERIENCES',
+      mainSectionFont,
+      brush: PdfSolidBrush(sectionHeaderColor),
+      bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
+    );
+    mainY += 18;
+
+    if (experienceList.isEmpty) {
       graphics.drawString(
-        'EXPERIENCES',
-        mainSectionFont,
-        brush: PdfSolidBrush(sectionHeaderColor),
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
+        'Fresher',
+        mainSubHeaderFont,
+        brush: PdfSolidBrush(mainHeaderColor),
+        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 12),
       );
-      mainY += 18;
+      mainY += 14;
+    } else {
       for (var exp in experienceList) {
         checkMainPageBreak(60);
         page = getPageAtIndex(mainPageIndex);
