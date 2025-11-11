@@ -20,7 +20,9 @@ class TabItem {
 }
 
 class CreateResume extends StatefulWidget {
-  const CreateResume({super.key});
+  final int? resumeId;
+  final String? originalFilePath;
+  const CreateResume({super.key, this.resumeId, this.originalFilePath});
 
   @override
   State<CreateResume> createState() => _CreateResumeState();
@@ -30,25 +32,27 @@ class _CreateResumeState extends State<CreateResume> {
   int currentStep = 0;
   final PageController pageController = PageController();
   final dbHelper = DatabaseHelper.instance;
+  late int _resumeId;
 
   @override
   void initState() {
     super.initState();
+    _resumeId = widget.resumeId ?? DateTime.now().millisecondsSinceEpoch;
     _checkFilledPages();
   }
 
   void _checkFilledPages() async {
     // Check each page's data and unlock if filled
-    final profile = await dbHelper.queryAllRows(DatabaseHelper.tableProfile);
-    final awards = await dbHelper.queryAllRows(DatabaseHelper.tableAwards);
-    final about = await dbHelper.queryAllRows(DatabaseHelper.tableAbout);
-    final education = await dbHelper.queryAllRows(DatabaseHelper.tableEducation);
-    final hobbies = await dbHelper.queryAllRows(DatabaseHelper.tableHobbies);
-    final languages = await dbHelper.queryAllRows(DatabaseHelper.tableLanguages);
-    final projects = await dbHelper.queryAllRows(DatabaseHelper.tableProjects);
-    final references = await dbHelper.queryAllRows(DatabaseHelper.tableAppReferences);
-    final experience = await dbHelper.queryAllRows(DatabaseHelper.tableExperience);
-    final skills = await dbHelper.queryAllRows(DatabaseHelper.tableSkills);
+    final profile = await dbHelper.queryAllRows(DatabaseHelper.tableProfile, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final awards = await dbHelper.queryAllRows(DatabaseHelper.tableAwards, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final about = await dbHelper.queryAllRows(DatabaseHelper.tableAbout, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final education = await dbHelper.queryAllRows(DatabaseHelper.tableEducation, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final hobbies = await dbHelper.queryAllRows(DatabaseHelper.tableHobbies, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final languages = await dbHelper.queryAllRows(DatabaseHelper.tableLanguages, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final projects = await dbHelper.queryAllRows(DatabaseHelper.tableProjects, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final references = await dbHelper.queryAllRows(DatabaseHelper.tableAppReferences, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final experience = await dbHelper.queryAllRows(DatabaseHelper.tableExperience, where: 'resumeId = ?', whereArgs: [_resumeId]);
+    final skills = await dbHelper.queryAllRows(DatabaseHelper.tableSkills, where: 'resumeId = ?', whereArgs: [_resumeId]);
 
     // Update func.index based on filled pages
     if (profile.isNotEmpty) {
@@ -212,7 +216,7 @@ class _CreateResumeState extends State<CreateResume> {
                             horizontal: 20,
                             vertical: 12,
                           ),
-                          decoration: BoxDecoration( // func.index <= i ? null :
+                          decoration: BoxDecoration( 
                             color: Colors.white.withOpacity(0.25),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
@@ -264,8 +268,6 @@ class _CreateResumeState extends State<CreateResume> {
             const SizedBox(height: 20),
             Expanded(
               child: GestureDetector(
-                // Intercept horizontal swipes so we can validate before allowing
-                // forward navigation. Backward navigation is always allowed.
                 onHorizontalDragEnd: (DragEndDetails details) {
                   final velocity = details.primaryVelocity ?? 0;
                   // Negative velocity -> user swiped left (forward)
@@ -320,6 +322,7 @@ class _CreateResumeState extends State<CreateResume> {
                   switch (index) {
                     case 0:
                       return profilepage(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -327,6 +330,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 1:
                       return awardpage(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -334,6 +338,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 2:
                       return Aboutme(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -341,6 +346,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 3:
                       return Education(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -348,6 +354,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 4:
                       return Hobbies(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -355,6 +362,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 5:
                       return Languages(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -362,6 +370,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 6:
                       return Projects(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -369,6 +378,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 7:
                       return References(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -376,6 +386,7 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 8:
                       return Experience(
+                        resumeId: _resumeId,
                         onNext: () => pageController.nextPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -383,8 +394,10 @@ class _CreateResumeState extends State<CreateResume> {
                       );
                     case 9:
                       return Skills(
+                        resumeId: _resumeId,
+                        originalFilePath: widget.originalFilePath,
                         onNext: () => pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 300), 
                           curve: Curves.easeInOut,
                         ),
                       );

@@ -7,7 +7,9 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Experience extends StatefulWidget {
   final VoidCallback onNext;
-  const Experience({super.key, required this.onNext});
+  
+  final int resumeId; // Make resumeId final
+  const Experience({super.key, required this.onNext, required this.resumeId});
 
   @override
   State<Experience> createState() => _ExperienceState();
@@ -47,7 +49,7 @@ class _ExperienceState extends State<Experience> {
   }
 
   void _loadExperiences() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableExperience);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableExperience, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         experiences.clear();
@@ -89,6 +91,7 @@ class _ExperienceState extends State<Experience> {
       'toYear': endYearController.text,
       'toMonth': endSelectedMonth,
       'description': descriptionController.text,
+      'resumeId': widget.resumeId,
     };
     if (row.values.any(
       (element) => element != null && element.toString().isNotEmpty,

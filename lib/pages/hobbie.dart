@@ -7,7 +7,8 @@ import 'package:resume_builder/services/func.dart';
 
 class Hobbies extends StatefulWidget {
   final VoidCallback? onNext;
-  const Hobbies({super.key, this.onNext});
+  final int resumeId;
+  const Hobbies({super.key, this.onNext, required this.resumeId});
 
   @override
   State<Hobbies> createState() => _HobbiesState();
@@ -48,7 +49,7 @@ class _HobbiesState extends State<Hobbies> {
   }
 
   void _loadHobbies() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableHobbies);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableHobbies, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         hobbiesList.clear();
@@ -61,7 +62,10 @@ class _HobbiesState extends State<Hobbies> {
     if (selectedHobby != null &&
         selectedHobby != 'None' &&
         !hobbiesList.any((h) => h['name'] == selectedHobby)) {
-      Map<String, dynamic> row = {'name': selectedHobby};
+      Map<String, dynamic> row = {
+        'name': selectedHobby,
+        'resumeId': widget.resumeId,
+      };
       final id = await dbHelper.insert(DatabaseHelper.tableHobbies, row);
       row['id'] = id;
       setState(() {

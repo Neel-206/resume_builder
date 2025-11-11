@@ -6,7 +6,9 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Projects extends StatefulWidget {
   final VoidCallback? onNext;
-  const Projects({super.key, this.onNext});
+
+  final int resumeId;
+  const Projects({super.key, this.onNext, required this.resumeId});
 
   @override
   State<Projects> createState() => _ProjectsState();
@@ -31,7 +33,7 @@ class _ProjectsState extends State<Projects> {
   }
 
   void _loadProjects() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProjects);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProjects, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {  // Check if widget is still mounted before calling setState
       setState(() {
         projects.addAll(allRows);
@@ -59,6 +61,7 @@ class _ProjectsState extends State<Projects> {
       'technologies': techController.text,
       'link': linkController.text,
       'year': yearController.text,
+      'resumeId': widget.resumeId,
     };
 
     if (project.values.any((element) => element.isNotEmpty)) {

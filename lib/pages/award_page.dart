@@ -7,7 +7,8 @@ import 'package:resume_builder/services/func.dart';
 
 class awardpage extends StatefulWidget {
   final VoidCallback? onNext;
-  const awardpage({super.key, this.onNext});
+  final int resumeId;
+  const awardpage({super.key, this.onNext, required this.resumeId});
 
   @override
   State<awardpage> createState() => _awardpageState();
@@ -43,8 +44,25 @@ class _awardpageState extends State<awardpage> {
     _loadAwards();
   }
 
+  @override
+  void didUpdateWidget(covariant awardpage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.resumeId != oldWidget.resumeId) {
+      _clearControllersAndLists();
+      _loadAwards();
+    }
+  }
+
+  void _clearControllersAndLists() {
+    titleController.clear();
+    issueController.clear();
+    yearController.clear();
+    discriptionController.clear();
+    awards.clear();
+  }
+
   void _loadAwards() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAwards);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAwards, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         awards.clear();
@@ -58,13 +76,16 @@ class _awardpageState extends State<awardpage> {
         issueController.text.trim().isNotEmpty ||
         yearController.text.trim().isNotEmpty ||
         discriptionController.text.trim().isNotEmpty) {
+      // Add resumeId to the row
       Map<String, dynamic> row = {
         'title': titleController.text.trim(),
         'issuer': issueController.text.trim(),
         'year': yearController.text.trim(),
         'month': selectedMonth,
         'description': discriptionController.text.trim(),
+ 'resumeId': widget.resumeId,
       };
+      row['resumeId'] = widget.resumeId;
       final id = await dbHelper.insert(DatabaseHelper.tableAwards, row);
       row['id'] = id;
       setState(() {
@@ -85,7 +106,7 @@ class _awardpageState extends State<awardpage> {
   }
 
   void _deleteAward(int id, int index) async {
-    await dbHelper.delete(DatabaseHelper.tableAwards, id);
+    await dbHelper.delete(DatabaseHelper.tableAwards, id); // Assuming ID is unique enough for deletion
     setState(() {
       awards.removeAt(index);
     });

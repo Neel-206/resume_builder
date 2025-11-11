@@ -10,11 +10,17 @@ import 'package:resume_builder/services/resume_storage.dart';
 class PdfPreviewPage extends StatelessWidget {
   final String path;
   final String templateName;
+  final int resumeId;
+  final String? originalFilePath;
+  final bool isViewingOnly;
 
   const PdfPreviewPage({
     super.key, 
     required this.path,
-    this.templateName = 'Default'
+    this.templateName = 'Default', 
+    required this.resumeId,
+    this.originalFilePath,
+    this.isViewingOnly = false,
   });
 
   @override
@@ -113,187 +119,188 @@ class PdfPreviewPage extends StatelessWidget {
             ),
           ],
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: SizedBox(
           width: MediaQuery.of(context).size.width * 0.9,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               // Share Button
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(56),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 30,
-                      offset: const Offset(0, 15),
-                      spreadRadius: -5,
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(56),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(56),
-                        color: Colors.white.withOpacity(0.1),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.60),
-                          width: 0.5,
-                        ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(0.5),
-                            Colors.white.withOpacity(0.1),
-                          ],
-                          stops: const [0.0, 1.0],
-                        ),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () async {
-                            final file = XFile(path);
-                            await Share.shareXFiles([
-                              file,
-                            ], text: 'Here is my resume!');
-                          },
-                          splashFactory: InkRipple.splashFactory,
-                          splashColor: Colors.white.withOpacity(0.2),
-                          highlightColor: Colors.white.withOpacity(0.1),
-                          child: Center(
-                            child: ShaderMask(
-                              shaderCallback: (Rect bounds) {
-                                return LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Colors.white.withOpacity(1),
-                                    Colors.white.withOpacity(0.8),
-                                  ],
-                                ).createShader(bounds);
-                              },
-                              child: const Icon(
-                                Icons.share,
-                                color: Colors.white,
-                                size: 32,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              _buildActionButton(
+                context: context,
+                icon: Icons.share,
+                onTap: () async {
+                  final file = XFile(path);
+                  await Share.shareXFiles([file], text: 'Here is my resume!');
+                },
               ),
-              const SizedBox(width: 12),
-              // Print Button
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(56),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 30,
-                      offset: const Offset(0, 15),
-                      spreadRadius: -5,
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(56),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(56),
-                        color: Colors.white.withOpacity(0.1),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.60),
-                          width: 0.5,
-                        ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(0.5),
-                            Colors.white.withOpacity(0.1),
-                          ],
-                          stops: const [0.0, 1.0],
-                        ),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () async {
-                            try {
-                              // First save the resume
-                              final savedPath = await ResumeStorage.saveResume(path, templateName);
-                              
-                              // Then print it
-                              final file = File(savedPath);
-                              final Uint8List bytes = await file.readAsBytes();
-                              await Printing.layoutPdf(
-                                onLayout: (format) async => bytes,
-                                name: 'resume.pdf',
-                              );
-
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Resume saved and ready for printing!'),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to process file: $e'),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                          splashFactory: InkRipple.splashFactory,
-                          splashColor: Colors.white.withOpacity(0.2),
-                          highlightColor: Colors.white.withOpacity(0.1),
-                          child: Center(
-                            child: ShaderMask(
-                              shaderCallback: (Rect bounds) {
-                                return LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Colors.white.withOpacity(1),
-                                    Colors.white.withOpacity(0.8),
-                                  ],
-                                ).createShader(bounds);
-                              },
-                              child: const Icon(
-                                Icons.download_rounded,
-                                color: Colors.white,
-                                size: 32,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              
+              // Show the correct second button based on the context
+              if (isViewingOnly)
+                _buildPrintButton(context) // For viewing existing resumes
+              else if (originalFilePath == null)
+                _buildDownloadAndSaveButton(context) // For new resumes
+              else
+                _buildSaveChangesButton(context), // For edited resumes
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildDownloadAndSaveButton(BuildContext context) {
+    return _buildActionButton(
+      context: context,
+      icon: Icons.download_rounded,
+      onTap: () async {
+        try {
+          // Save as new resume
+          final savedPath = await ResumeStorage.saveResume(path, templateName, resumeId);
+
+          // Then trigger the print/download action
+          final file = File(savedPath);
+          final Uint8List bytes = await file.readAsBytes();
+          await Printing.layoutPdf(
+            onLayout: (format) async => bytes,
+            name: 'resume.pdf',
+          );
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Resume saved to library!')),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to save or download resume: $e')),
+            );
+          }
+        }
+      },
+    );
+  }
+
+  Widget _buildSaveChangesButton(BuildContext context) {
+    return _buildActionButton(
+      context: context,
+      icon: Icons.save_alt_rounded,
+      onTap: () async {
+        try {
+          // Update existing resume
+          await ResumeStorage.updateResume(path, originalFilePath!, templateName, resumeId);
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Resume updated successfully!')),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to update resume: $e')),
+            );
+          }
+        }
+      },
+    );
+  }
+
+  Widget _buildPrintButton(BuildContext context) {
+    return _buildActionButton(
+      context: context,
+      icon: Icons.print_rounded,
+      onTap: () async {
+        try {
+          final file = File(path);
+          final Uint8List bytes = await file.readAsBytes();
+          await Printing.layoutPdf(
+            onLayout: (format) async => bytes,
+            name: 'resume.pdf',
+          );
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to print resume: $e')),
+            );
+          }
+        }
+      },
+    );
+  }
+
+
+  // Helper widget to create the glassmorphic icon buttons
+  Widget _buildActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: 62,
+      height: 62,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(56),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+            spreadRadius: -5,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(56),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(56),
+              color: Colors.white.withOpacity(0.1),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.60),
+                width: 0.5,
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.5),
+                  Colors.white.withOpacity(0.1),
+                ],
+                stops: const [0.0, 1.0],
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                splashFactory: InkRipple.splashFactory,
+                splashColor: Colors.white.withOpacity(0.2),
+                highlightColor: Colors.white.withOpacity(0.1),
+                child: Center(
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(1),
+                          Colors.white.withOpacity(0.8),
+                        ],
+                      ).createShader(bounds);
+                    },
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

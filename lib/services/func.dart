@@ -2,6 +2,11 @@ import 'dart:developer';
 
 class func {
   static int index = 0;
+  static void reset() {
+    index = 0;
+    log("Page index reset to 0");
+  }
+
   static bool unlockpage(int pageindex) {
     if (index == pageindex) {
       index++;

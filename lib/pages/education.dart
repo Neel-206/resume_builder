@@ -5,10 +5,10 @@ import 'package:resume_builder/widgets/app_text_field.dart';
 import 'package:resume_builder/services/database_helper.dart';
 
 class Education extends StatefulWidget {
-  final VoidCallback? onNext;
+ final VoidCallback? onNext;
 
-  const Education({super.key, this.onNext});
-
+  final int resumeId; // Make resumeId final
+  const Education({super.key, this.onNext, required this.resumeId});
   @override
   State<Education> createState() => _EducationState();
 }
@@ -34,7 +34,7 @@ class _EducationState extends State<Education> {
   }
 
   void _loadEducation() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableEducation);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableEducation, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         educationList.clear();
@@ -63,6 +63,7 @@ class _EducationState extends State<Education> {
         'toYear': toController.text.trim(),
         'description': discriptionController.text.trim(),
         'marks': marksController.text.trim(),
+ 'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableEducation, row);
       row['id'] = id;

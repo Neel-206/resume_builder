@@ -8,7 +8,13 @@ import 'package:resume_builder/services/pdf_service.dart';
 import 'dart:io';
 
 class ChooseTemplate extends StatefulWidget {
-  const ChooseTemplate({super.key});
+  final int resumeId;
+  final String? originalFilePath;
+  const ChooseTemplate({
+    super.key,
+    required this.resumeId,
+    this.originalFilePath,
+  });
 
   @override
   State<ChooseTemplate> createState() => _ChooseTemplateState();
@@ -30,19 +36,35 @@ class _ChooseTemplateState extends State<ChooseTemplate> {
     Resumetemplate('Modern', 'images/template2.png'),
     Resumetemplate('Unique', 'images/template3.png'),
     Resumetemplate('Professional', 'images/template4.png'),
-    Resumetemplate('Normal', 'images/template5.png')
+    Resumetemplate('Normal', 'images/template5.png'),
   ];
 
-  Future<void> _generateAndShowPdf(BuildContext context, String templateName) async {
+  Future<void> _generateAndShowPdf(
+    BuildContext context,
+    String templateName,
+  ) async {
     setState(() => isLoading = true);
     final pdfService = PdfService();
-    final Uint8List pdfBytes = await pdfService.createResume(templateName);
+    final Uint8List pdfBytes = await pdfService.createResume(
+      templateName,
+      widget.resumeId,
+    );
     final output = await getTemporaryDirectory();
     final file = File("${output.path}/resume.pdf");
     await file.writeAsBytes(pdfBytes);
     setState(() => isLoading = false);
     if (!mounted) return;
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => PdfPreviewPage(path: file.path)));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewPage(
+          path: file.path,
+          resumeId: widget.resumeId,
+          templateName: templateName,
+          originalFilePath: widget.originalFilePath,
+          isViewingOnly: false,
+        ),
+      ),
+    );
   }
 
   @override
@@ -107,14 +129,17 @@ class _ChooseTemplateState extends State<ChooseTemplate> {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                    ),
                     child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: 0.7,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                            childAspectRatio: 0.7,
+                          ),
                       itemCount: templates.length,
                       itemBuilder: (BuildContext context, int index) {
                         final template = templates[index];
@@ -168,8 +193,14 @@ class _ChooseTemplateState extends State<ChooseTemplate> {
                                         child: Image.asset(
                                           template.thumbnail,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Center(child: Icon(Icons.image_not_supported, color: Colors.white70)),
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Center(
+                                                    child: Icon(
+                                                      Icons.image_not_supported,
+                                                      color: Colors.white70,
+                                                    ),
+                                                  ),
                                         ),
                                       ),
                                     ),

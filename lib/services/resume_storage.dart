@@ -4,8 +4,8 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class ResumeStorage {
   static final dbHelper = DatabaseHelper.instance;
-
-  static Future<String> saveResume(String sourcePath, String templateName) async {
+  
+  static Future<String> saveResume(String sourcePath, String templateName, int resumeId) async {
     try {
       // Get the application documents directory
       final directory = await getApplicationDocumentsDirectory();
@@ -22,6 +22,7 @@ class ResumeStorage {
       await dbHelper.insert('saved_resumes', {
         'fileName': fileName,
         'filePath': targetPath,
+        'resumeId': resumeId,
         'templateName': templateName,
         'createdAt': DateTime.now().toIso8601String(),
       });
@@ -32,6 +33,27 @@ class ResumeStorage {
       rethrow;
     }
   }
+
+  static Future<String> updateResume(String sourcePath, String targetPath, String templateName, int resumeId) async {
+    try {
+      // Overwrite the existing file with the new content from the temporary source path
+      await File(sourcePath).copy(targetPath);
+
+      // Update the reference in the database
+      // We update the 'createdAt' timestamp to reflect the modification time.
+      // A dedicated 'updatedAt' column would be even better for future improvements.
+      await dbHelper.updateByResumeId('saved_resumes', {
+        'templateName': templateName,
+        'createdAt': DateTime.now().toIso8601String(),
+      }, resumeId);
+
+      return targetPath;
+    } catch (e) {
+      print('Error updating resume: $e');
+      rethrow;
+    }
+  }
+
 
   static Future<List<Map<String, dynamic>>> getAllResumes() async {
     try {

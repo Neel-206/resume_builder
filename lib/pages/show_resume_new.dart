@@ -2,12 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resume_builder/pages/pdf_preview_page.dart';
+import 'package:resume_builder/pages/create_resume.dart';
 import 'package:resume_builder/services/resume_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf_thumbnail/pdf_thumbnail.dart';
 
-/// ShowResume Page - Displays saved resumes in a modern grid layout
-/// Features: Glassmorphism design, smooth animations, and intuitive UX
 class ShowResume extends StatefulWidget {
   const ShowResume({super.key});
 
@@ -20,18 +19,16 @@ class _ShowResumeState extends State<ShowResume>
   List<Map<String, dynamic>> _resumes = [];
   bool _isLoading = true;
   late AnimationController _animationController;
-  Animation<double>?
-  _fadeAnimation; // Nullable to prevent LateInitializationError
+  Animation<double>? _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Initialize animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    // Initialize fade animation
+
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
@@ -94,11 +91,17 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
+
+  void _editResume(Map<String, dynamic> resume) {
+    final int resumeId = resume['resumeId'] ?? DateTime.now().millisecondsSinceEpoch;
+    final String? originalFilePath = resume['filePath'];
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreateResume(resumeId: resumeId, originalFilePath: originalFilePath)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Container(
@@ -195,16 +198,12 @@ class _ShowResumeState extends State<ShowResume>
     if (_isLoading) {
       return _buildLoadingState();
     }
-
     if (_resumes.isEmpty) {
       return _buildEmptyState(screenWidth);
     }
-
-    // Check if animation is initialized before using FadeTransition
     if (_fadeAnimation == null) {
       return _buildGridView(screenWidth);
     }
-
     return FadeTransition(
       opacity: _fadeAnimation!,
       child: _buildGridView(screenWidth),
@@ -378,7 +377,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds PDF thumbnail with delete button - FIXED: Prevents overflow by constraining properly
+  /// Builds PDF thumbnail with delete and edit buttons
   Widget _buildThumbnail(Map<String, dynamic> resume) {
     return Container(
       decoration: BoxDecoration(
@@ -401,7 +400,7 @@ class _ShowResumeState extends State<ShowResume>
               height: constraints.maxHeight,
               child: Stack(
                 children: [
-                  // PDF Thumbnail - Properly constrained to prevent overflow
+                  // PDF Thumbnail
                   Positioned.fill(
                     child: ClipRect(
                       child: OverflowBox(
@@ -428,7 +427,13 @@ class _ShowResumeState extends State<ShowResume>
                       ),
                     ),
                   ),
-                  // Delete Button
+                  // Edit Button - Top Left
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: _buildEditButton(resume),
+                  ),
+                  // Delete Button - Top Right
                   Positioned(
                     top: 8,
                     right: 8,
@@ -438,6 +443,42 @@ class _ShowResumeState extends State<ShowResume>
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  /// Builds edit button with glassmorphic effect
+  Widget _buildEditButton(Map<String, dynamic> resume) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _editResume(resume),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade400, Colors.blue.shade600],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.9),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.edit_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
         ),
       ),
     );
@@ -543,7 +584,9 @@ class _ShowResumeState extends State<ShowResume>
         MaterialPageRoute(
           builder: (context) => PdfPreviewPage(
             path: resume['filePath'],
+            resumeId: resume['resumeId'] ?? DateTime.now().millisecondsSinceEpoch,
             templateName: resume['templateName'],
+            isViewingOnly: true,
           ),
         ),
       );

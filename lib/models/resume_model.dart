@@ -134,6 +134,8 @@ class Education {
   String? description;
   String? marks;
 
+  var resumeId;
+
   Education({
     this.id,
     this.school,
@@ -192,6 +194,8 @@ class Experience {
   var jobTitle;
 
   var place;
+
+  var resumeId;
 
   Experience({
     this.id,
@@ -300,6 +304,8 @@ class Project {
   String? link;
   String? year;
 
+  var resumeId;
+
   Project({
     this.id,
     this.name,
@@ -344,6 +350,8 @@ class AppReference {
   String? phone;
   String? email;
 
+  var resumeId;
+
   AppReference({
     this.id,
     this.name,
@@ -381,6 +389,8 @@ class Skill {
   int? id;
   String name;
   String proficiency;
+
+  var resumeId;
 
   Skill({this.id, required this.name, required this.proficiency});
 

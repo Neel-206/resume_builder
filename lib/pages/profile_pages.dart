@@ -5,7 +5,8 @@ import 'package:resume_builder/services/func.dart';
 
 class profilepage extends StatefulWidget {
   final VoidCallback? onNext;
-  const profilepage({super.key, this.onNext});
+  final int resumeId;
+  const profilepage({super.key, this.onNext, required this.resumeId});
 
   @override
   State<profilepage> createState() => _profilepageState();
@@ -25,19 +26,19 @@ class _profilepageState extends State<profilepage> {
   final TextEditingController pincodeController = TextEditingController();
   final TextEditingController linkedinController = TextEditingController();
   final TextEditingController githubController = TextEditingController();
-  final int pageindex = 0;
-  
+  final int pageindex = 0; 
+  late final int resumeId;
   bool showAdditionalFields = false;
   final dbHelper = DatabaseHelper.instance;
-  final TextInputType? keyboardType = null;
-  @override
+  final TextInputType? keyboardType = null; 
   void initState() {
+    resumeId = widget.resumeId; 
     super.initState();
     _loadProfileData();
   }
 
   void _loadProfileData() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProfile);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProfile, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (allRows.isNotEmpty) {
       if (mounted) {
         final profile = allRows.first;
@@ -362,9 +363,10 @@ class _profilepageState extends State<profilepage> {
       'pincode': pincodeController.text,
       'linkedin': linkedinController.text,
       'github': githubController.text,
+      'resumeId': resumeId,
     };
 
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProfile);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProfile, where: 'resumeId = ?', whereArgs: [resumeId]);
     if (allRows.isEmpty) {
       await dbHelper.insert(DatabaseHelper.tableProfile, row);
     } else {

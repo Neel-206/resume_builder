@@ -8,7 +8,9 @@ import 'package:resume_builder/services/database_helper.dart';
 class Aboutme extends StatefulWidget {
   final VoidCallback? onNext;
 
-  const Aboutme({super.key, this.onNext});
+  final int resumeId;
+
+  const Aboutme({super.key, this.onNext, required this.resumeId});
 
   @override
   State<Aboutme> createState() => _AboutmeState();
@@ -26,7 +28,7 @@ class _AboutmeState extends State<Aboutme> {
   }
 
   void _loadAboutData() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (allRows.isNotEmpty) {
       setState(() {
         aboutController.text = allRows.first['aboutText'] ?? '';
@@ -37,9 +39,10 @@ class _AboutmeState extends State<Aboutme> {
   void _saveAboutData() async {
     Map<String, dynamic> row = {
       'aboutText': aboutController.text,
+      'resumeId': widget.resumeId,
     };
 
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (allRows.isEmpty) {
       await dbHelper.insert(DatabaseHelper.tableAbout, row);
     } else {

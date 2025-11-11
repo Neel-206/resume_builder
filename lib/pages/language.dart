@@ -6,8 +6,8 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Languages extends StatefulWidget {
   final VoidCallback? onNext;
-
-  const Languages({super.key, this.onNext});
+  final int resumeId;
+  const Languages({super.key, this.onNext, required this.resumeId});
 
   @override
   State<Languages> createState() => _LanguagesState();
@@ -29,7 +29,7 @@ class _LanguagesState extends State<Languages> {
   }
 
   void _loadLanguages() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableLanguages);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableLanguages, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         languagesList.clear();
@@ -53,6 +53,7 @@ class _LanguagesState extends State<Languages> {
         'canRead': canRead ? 1 : 0,
         'canWrite': canWrite ? 1 : 0,
         'canSpeak': canSpeak ? 1 : 0,
+ 'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableLanguages, row);
       row['id'] = id;

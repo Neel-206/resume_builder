@@ -8,7 +8,9 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Skills extends StatefulWidget {
   final VoidCallback? onNext;
-  const Skills({super.key, this.onNext});
+  final int resumeId;
+  final String? originalFilePath;
+  const Skills({super.key, this.onNext, required this.resumeId, this.originalFilePath});
 
   @override
   State<Skills> createState() => _SkillsState();
@@ -35,7 +37,7 @@ class _SkillsState extends State<Skills> {
   }
 
   void _loadSkills() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableSkills);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableSkills, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         skills.clear();
@@ -65,6 +67,7 @@ class _SkillsState extends State<Skills> {
       Map<String, dynamic> row = {
         'name': newSkillName,
         'proficiency': selectedProficiency,
+        'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableSkills, row);
       row['id'] = id;
@@ -349,7 +352,7 @@ class _SkillsState extends State<Skills> {
                     if (next && widget.onNext != null) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => ChooseTemplate(),
+                          builder: (context) => ChooseTemplate(resumeId: widget.resumeId, originalFilePath: widget.originalFilePath),
                         ),
                       );
                     }

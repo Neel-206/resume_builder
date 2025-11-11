@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "ResumeMaker.db";
-  static const _databaseVersion = 4;
+  static const _databaseVersion = 6; 
 
   // Table names
   static const tableProfile = 'profile';
@@ -47,6 +47,7 @@ class DatabaseHelper {
     tableProfile: '''
       CREATE TABLE $tableProfile (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         firstName TEXT,
         lastName TEXT,
         email TEXT,
@@ -63,12 +64,14 @@ class DatabaseHelper {
     tableAbout: '''
       CREATE TABLE $tableAbout (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         aboutText TEXT
       )
     ''',
     tableAwards: '''
       CREATE TABLE $tableAwards (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         title TEXT,
         issuer TEXT,
         year TEXT,
@@ -79,6 +82,7 @@ class DatabaseHelper {
     tableEducation: '''
       CREATE TABLE $tableEducation (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         school TEXT,
         field TEXT,
         degree TEXT,
@@ -93,6 +97,7 @@ class DatabaseHelper {
     tableExperience: '''
       CREATE TABLE $tableExperience (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         company TEXT,
         position TEXT,
         fromYear TEXT,
@@ -105,12 +110,14 @@ class DatabaseHelper {
     tableHobbies: '''
       CREATE TABLE $tableHobbies (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT NOT NULL
       )
     ''',
     tableLanguages: '''
       CREATE TABLE $tableLanguages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT NOT NULL,
         canRead INTEGER,
         canWrite INTEGER,
@@ -120,6 +127,7 @@ class DatabaseHelper {
     tableProjects: '''
       CREATE TABLE $tableProjects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT,
         role TEXT,
         description TEXT,
@@ -131,6 +139,7 @@ class DatabaseHelper {
     tableAppReferences: '''
       CREATE TABLE $tableAppReferences (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT,
         relationship TEXT,
         company TEXT,
@@ -141,6 +150,7 @@ class DatabaseHelper {
     tableSkills: '''
       CREATE TABLE $tableSkills (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT NOT NULL,
         proficiency TEXT NOT NULL
       )
@@ -148,6 +158,7 @@ class DatabaseHelper {
     tableSavedResumes: '''
       CREATE TABLE $tableSavedResumes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         fileName TEXT NOT NULL,
         filePath TEXT NOT NULL,
         templateName TEXT NOT NULL,
@@ -194,6 +205,21 @@ class DatabaseHelper {
         // Table might already exist, which is fine
       }
     }
+    if (oldVersion < 5) {
+      // Version 5 adds resumeId to all data tables
+      final tablesToUpdate = [
+        tableProfile, tableAbout, tableAwards, tableEducation, tableExperience,
+        tableHobbies, tableLanguages, tableProjects, tableAppReferences, tableSkills,
+        tableSavedResumes
+      ];
+      for (final table in tablesToUpdate) {
+        var tableInfo = await db.rawQuery('PRAGMA table_info($table)');
+        bool resumeIdExists = tableInfo.any((col) => col['name'] == 'resumeId');
+        if (!resumeIdExists) {
+          await db.execute('ALTER TABLE $table ADD COLUMN resumeId INTEGER');
+        }
+      }
+    }
     // Add other migration logic for future versions here
   }
 
@@ -206,9 +232,9 @@ class DatabaseHelper {
   }
 
   /// Queries all rows from the specified [table].
-  Future<List<Map<String, dynamic>>> queryAllRows(String table) async {
+  Future<List<Map<String, dynamic>>> queryAllRows(String table, {String? where, List<dynamic>? whereArgs}) async {
     Database db = await instance.database;
-    return await db.query(table);
+    return await db.query(table, where: where, whereArgs: whereArgs);
   }
 
   /// Updates a row in the specified [table]. The map must contain an 'id' key.
@@ -216,6 +242,12 @@ class DatabaseHelper {
     Database db = await instance.database;
     int id = row['id'];
     return await db.update(table, row, where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Updates a row in the specified [table] by resumeId.
+  Future<int> updateByResumeId(String table, Map<String, dynamic> row, int resumeId) async {
+    Database db = await instance.database;
+    return await db.update(table, row, where: 'resumeId = ?', whereArgs: [resumeId]);
   }
 
   /// Deletes the row with the specified [id] from the [table].

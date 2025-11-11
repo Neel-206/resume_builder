@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resume_builder/pages/create_resume.dart';
 import 'package:resume_builder/pages/show_resume_new.dart';
+import 'package:resume_builder/services/func.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -163,6 +164,8 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 ElevatedButton(
                                   onPressed: () {
+                                    // Reset the page unlock state for a new resume
+                                    func.reset();
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) => CreateResume(),

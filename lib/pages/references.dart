@@ -7,7 +7,9 @@ import 'package:resume_builder/services/database_helper.dart';
 class References extends StatefulWidget {
   final VoidCallback? onNext;
 
-  const References({super.key, this.onNext});
+  final int resumeId;
+
+  const References({super.key, this.onNext, required this.resumeId});
 
   @override
   State<References> createState() => _ReferencesState();
@@ -22,16 +24,20 @@ class _ReferencesState extends State<References> {
   final TextEditingController companyController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  late int resumeId;
   final int pageindex = 7;
   @override
   void initState() {
     super.initState();
+    resumeId = widget.resumeId;
     _loadReferences();
   }
-
+  
   void _loadReferences() async {
     final allRows = await dbHelper.queryAllRows(
       DatabaseHelper.tableAppReferences,
+      where: 'resumeId = ?',
+      whereArgs: [widget.resumeId],
     );
     if (mounted) {
       setState(() {
@@ -54,6 +60,7 @@ class _ReferencesState extends State<References> {
         'company': companyController.text,
         'phone': phoneController.text,
         'email': emailController.text,
+        'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableAppReferences, row);
       row['id'] = id;
