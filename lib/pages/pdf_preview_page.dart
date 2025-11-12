@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:printing/printing.dart';
+import 'package:resume_builder/pages/home_page.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:resume_builder/services/resume_storage.dart';
 
@@ -15,9 +16,9 @@ class PdfPreviewPage extends StatelessWidget {
   final bool isViewingOnly;
 
   const PdfPreviewPage({
-    super.key, 
+    super.key,
     required this.path,
-    this.templateName = 'Default', 
+    this.templateName = 'Default',
     required this.resumeId,
     this.originalFilePath,
     this.isViewingOnly = false,
@@ -98,7 +99,7 @@ class PdfPreviewPage extends StatelessWidget {
                     ),
                     child: Center(
                       child: AspectRatio(
-                        aspectRatio: 210 / 297, // A4 paper aspect ratio
+                        aspectRatio: 210 / 297, // A4 size page
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: PDFView(
@@ -136,11 +137,11 @@ class PdfPreviewPage extends StatelessWidget {
               ),
               // Show the correct second button based on the context
               if (isViewingOnly)
-                _buildPrintButton(context) // For viewing existing resumes
+                buildPrintButton(context) // For viewing existing resumes
               else if (originalFilePath == null)
-                _buildDownloadAndSaveButton(context) // For new resumes
+                buildDownloadAndSaveButton(context) // For new resumes
               else
-                _buildSaveChangesButton(context), // For edited resumes
+                buildSaveChangesButton(context), // For edited resumes
             ],
           ),
         ),
@@ -148,15 +149,18 @@ class PdfPreviewPage extends StatelessWidget {
     );
   }
 
-
-  Widget _buildDownloadAndSaveButton(BuildContext context) {
+  Widget buildDownloadAndSaveButton(BuildContext context) {
     return _buildActionButton(
       context: context,
       icon: Icons.download_rounded,
       onTap: () async {
         try {
           // Save as new resume
-          final savedPath = await ResumeStorage.saveResume(path, templateName, resumeId);
+          final savedPath = await ResumeStorage.saveResume(
+            path,
+            templateName,
+            resumeId,
+          );
 
           // Then trigger the print/download action
           final file = File(savedPath);
@@ -170,11 +174,15 @@ class PdfPreviewPage extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Resume saved to library!')),
             );
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
+            );
           }
         } catch (e) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to save or download resume: $e')),
+              SnackBar(content: Text('Failed to save or download resume')),
             );
           }
         }
@@ -182,18 +190,27 @@ class PdfPreviewPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSaveChangesButton(BuildContext context) {
+  Widget buildSaveChangesButton(BuildContext context) {
     return _buildActionButton(
       context: context,
       icon: Icons.save_alt_rounded,
       onTap: () async {
         try {
           // Update existing resume
-          await ResumeStorage.updateResume(path, originalFilePath!, templateName, resumeId);
+          await ResumeStorage.updateResume(
+            path,
+            originalFilePath!,
+            templateName,
+            resumeId,
+          );
 
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Resume updated successfully!')),
+            );
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
             );
           }
         } catch (e) {
@@ -207,10 +224,10 @@ class PdfPreviewPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPrintButton(BuildContext context) {
+  Widget buildPrintButton(BuildContext context) {
     return _buildActionButton(
       context: context,
-      icon: Icons.print_rounded,
+      icon: Icons.download_rounded,
       onTap: () async {
         try {
           final file = File(path);
@@ -229,7 +246,6 @@ class PdfPreviewPage extends StatelessWidget {
       },
     );
   }
-
 
   // Helper widget to create the glassmorphic icon buttons
   Widget _buildActionButton({
@@ -292,11 +308,7 @@ class PdfPreviewPage extends StatelessWidget {
                         ],
                       ).createShader(bounds);
                     },
-                    child: Icon(
-                      icon,
-                      color: Colors.white,
-                      size: 32,
-                    ),
+                    child: Icon(icon, color: Colors.white, size: 32),
                   ),
                 ),
               ),

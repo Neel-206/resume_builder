@@ -1,6 +1,3 @@
-// Note: The name 'Reference' is a reserved keyword in Dart, so the class for
-// the 'app_references' table is named 'AppReference'.
-
 /// Model for the 'profile' table.
 class Profile {
   int? id;

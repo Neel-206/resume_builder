@@ -25,7 +25,7 @@ class _ShowResumeState extends State<ShowResume>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 950),
       vsync: this,
     );
 
@@ -174,7 +174,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds subtitle text
+  // Builds subtitle text
   Widget _buildSubtitle(double screenWidth) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
@@ -193,7 +193,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds the main resume grid or empty state
+  // Builds the main resume grid or empty state
   Widget _buildResumeGrid(double screenWidth) {
     if (_isLoading) {
       return _buildLoadingState();
@@ -210,7 +210,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds the grid view widget
+  // Builds the grid view widget
   Widget _buildGridView(double screenWidth) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -230,7 +230,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds loading indicator
+  // Builds loading indicator
   Widget _buildLoadingState() {
     return Center(
       child: Column(
@@ -265,7 +265,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds empty state when no resumes exist
+  // Builds empty state when no resumes exist
   Widget _buildEmptyState(double screenWidth) {
     return Center(
       child: Column(
@@ -318,7 +318,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds individual resume card with glassmorphic effect
+  // Builds individual resume card with glassmorphic effect
   Widget _buildResumeCard(Map<String, dynamic> resume, int index) {
     final file = File(resume['filePath']);
     final dateCreated = DateTime.parse(resume['createdAt']);
@@ -326,7 +326,7 @@ class _ShowResumeState extends State<ShowResume>
     final formattedTime = DateFormat('h:mm a').format(dateCreated);
 
     return TweenAnimationBuilder<double>(
-      duration: Duration(milliseconds: 400 + (index * 100)),
+      duration: Duration(milliseconds: 550 + (index * 100)),
       tween: Tween(begin: 0.0, end: 1.0),
       builder: (context, value, child) {
         return Transform.scale(
@@ -377,7 +377,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds PDF thumbnail with delete and edit buttons
+  // Builds PDF thumbnail with delete and edit buttons
   Widget _buildThumbnail(Map<String, dynamic> resume) {
     return Container(
       decoration: BoxDecoration(
@@ -448,7 +448,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds edit button with glassmorphic effect
+  // Builds edit button with glassmorphic effect
   Widget _buildEditButton(Map<String, dynamic> resume) {
     return Material(
       color: Colors.transparent,
@@ -484,7 +484,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds delete button with glassmorphic effect
+  // Builds delete button with glassmorphic effect
   Widget _buildDeleteButton(Map<String, dynamic> resume) {
     return Material(
       color: Colors.transparent,
@@ -520,7 +520,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Builds card footer with name and date
+  // Builds card footer with name and date
   Widget _buildCardFooter(
     Map<String, dynamic> resume,
     String formattedDate,
@@ -576,7 +576,7 @@ class _ShowResumeState extends State<ShowResume>
     );
   }
 
-  /// Opens resume in preview page
+  // Opens resume in preview page
   void _openResume(File file, Map<String, dynamic> resume) {
     if (file.existsSync()) {
       Navigator.push(
@@ -596,12 +596,12 @@ class _ShowResumeState extends State<ShowResume>
     }
   }
 
-  /// Shows delete confirmation dialog
+  // Shows delete confirmation dialog
   void _showDeleteDialog(Map<String, dynamic> resume) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withOpacity(0.95),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         contentPadding: const EdgeInsets.all(24),
         title: Row(

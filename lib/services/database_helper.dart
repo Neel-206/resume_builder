@@ -220,49 +220,48 @@ class DatabaseHelper {
         }
       }
     }
-    // Add other migration logic for future versions here
   }
 
   // Helper methods to insert, query, update, and delete.
 
-  /// Inserts a row into the specified [table]. Returns the new row's id.
+  // Inserts a row into the specified [table]. Returns the new row's id.
   Future<int> insert(String table, Map<String, dynamic> row) async {
     Database db = await instance.database;
     return await db.insert(table, row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  /// Queries all rows from the specified [table].
+  // Queries all rows from the specified [table].
   Future<List<Map<String, dynamic>>> queryAllRows(String table, {String? where, List<dynamic>? whereArgs}) async {
     Database db = await instance.database;
     return await db.query(table, where: where, whereArgs: whereArgs);
   }
 
-  /// Updates a row in the specified [table]. The map must contain an 'id' key.
+  // Updates a row in the specified [table]. The map must contain an 'id' key.
   Future<int> update(String table, Map<String, dynamic> row) async {
     Database db = await instance.database;
     int id = row['id'];
     return await db.update(table, row, where: 'id = ?', whereArgs: [id]);
   }
 
-  /// Updates a row in the specified [table] by resumeId.
+  // Updates a row in the specified [table] by resumeId.
   Future<int> updateByResumeId(String table, Map<String, dynamic> row, int resumeId) async {
     Database db = await instance.database;
     return await db.update(table, row, where: 'resumeId = ?', whereArgs: [resumeId]);
   }
 
-  /// Deletes the row with the specified [id] from the [table].
+  // Deletes the row with the specified [id] from the [table].
   Future<int> delete(String table, int id) async {
     Database db = await instance.database;
     return await db.delete(table, where: 'id = ?', whereArgs: [id]);
   }
 
-  /// Deletes a row by file path from the saved_resumes table
+  // Deletes a row by file path from the saved_resumes table
   Future<int> deleteByPath(String table, String filePath) async {
     Database db = await instance.database;
     return await db.delete(table, where: 'filePath = ?', whereArgs: [filePath]);
   }
 
-  /// A generic method to clear all data from a table.
+  // A generic method to clear all data from a table.
   Future<void> clearTable(String table) async {
     Database db = await instance.database;
     await db.delete(table);

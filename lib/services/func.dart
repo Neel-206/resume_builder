@@ -18,7 +18,7 @@ class func {
       return true;
     }
     else if (pageindex == index + 1) {
-      // This is for when we're unlocking pages during app start
+      // This is for when we are unlocking pages during app start
       index = pageindex + 1;
       log("page unlocked to $index");
       return true;
