@@ -36,12 +36,8 @@ class ResumeStorage {
 
   static Future<String> updateResume(String sourcePath, String targetPath, String templateName, int resumeId) async {
     try {
-      // Overwrite the existing file with the new content from the temporary source path
       await File(sourcePath).copy(targetPath);
 
-      // Update the reference in the database
-      // We update the 'createdAt' timestamp to reflect the modification time.
-      // A dedicated 'updatedAt' column would be even better for future improvements.
       await dbHelper.updateByResumeId('saved_resumes', {
         'templateName': templateName,
         'createdAt': DateTime.now().toIso8601String(),
