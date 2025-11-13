@@ -22,21 +22,28 @@ class TabItem {
 class CreateResume extends StatefulWidget {
   final int? resumeId;
   final String? originalFilePath;
-  const CreateResume({super.key, this.resumeId, this.originalFilePath});
+  final int initialPage;
+  const CreateResume(
+      {super.key,
+      this.resumeId,
+      this.originalFilePath,
+      this.initialPage = 0});
 
   @override
   State<CreateResume> createState() => _CreateResumeState();
 }
 
 class _CreateResumeState extends State<CreateResume> {
-  int currentStep = 0;
-  final PageController pageController = PageController();
+  late int currentStep;
+  late final PageController pageController;
   final dbHelper = DatabaseHelper.instance;
   late int _resumeId;
 
   @override
   void initState() {
     super.initState();
+    currentStep = widget.initialPage;
+    pageController = PageController(initialPage: widget.initialPage);
     _resumeId = widget.resumeId ?? DateTime.now().millisecondsSinceEpoch;
     _checkFilledPages();
   }

@@ -7,8 +7,8 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Experience extends StatefulWidget {
   final VoidCallback onNext;
-  
-  final int resumeId; // Make resumeId final
+  final int resumeId;
+
   const Experience({super.key, required this.onNext, required this.resumeId});
 
   @override
@@ -49,25 +49,16 @@ class _ExperienceState extends State<Experience> {
   }
 
   void _loadExperiences() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableExperience, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
+    final allRows = await dbHelper.queryAllRows(
+      DatabaseHelper.tableExperience,
+      where: 'resumeId = ?',
+      whereArgs: [widget.resumeId],
+    );
     if (mounted) {
       setState(() {
-        experiences.clear();
-        if (allRows.isEmpty) {
-          // If no experience entries, add a "Fresher" entry
-          Map<String, dynamic> fresherEntry = {
-            'company': 'Fresher',
-            'position': '',
-            'fromYear': '',
-            'fromMonth': '',
-            'toYear': '',
-            'toMonth': '',
-            'description': '',
-          };
-          experiences.add(fresherEntry);
-        } else {
-          experiences.addAll(allRows);
-        }
+        experiences
+          ..clear()
+          ..addAll(allRows);
       });
     }
   }
@@ -93,15 +84,7 @@ class _ExperienceState extends State<Experience> {
       'description': descriptionController.text,
       'resumeId': widget.resumeId,
     };
-    if (row.values.any(
-      (element) => element != null && element.toString().isNotEmpty,
-    )) {
-      // Remove the "Fresher" entry if it exists
-      if (experiences.length == 1 && experiences[0]['company'] == 'Fresher') {
-        setState(() {
-          experiences.clear();
-        });
-      }
+    if (form_Key.currentState?.validate() ?? false) {
       final id = await dbHelper.insert(DatabaseHelper.tableExperience, row);
       row['id'] = id;
       setState(() {
@@ -127,19 +110,6 @@ class _ExperienceState extends State<Experience> {
     await dbHelper.delete(DatabaseHelper.tableExperience, id);
     setState(() {
       experiences.removeAt(index);
-      // If no experiences left, show "Fresher"
-      if (experiences.isEmpty) {
-        Map<String, dynamic> fresherEntry = {
-          'company': 'Fresher',
-          'position': '',
-          'fromYear': '',
-          'fromMonth': '',
-          'toYear': '',
-          'toMonth': '',
-          'description': '',
-        };
-        experiences.add(fresherEntry);
-      }
     });
   }
 
@@ -158,7 +128,7 @@ class _ExperienceState extends State<Experience> {
                 Container(
                   alignment: Alignment.center,
                   child: const Text(
-                    'Experiance',
+                    'Experience',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -335,7 +305,7 @@ class _ExperienceState extends State<Experience> {
                                   children: [
                                     Expanded(
                                       child: AppTextField(
-                                        label: " To Year",
+                                        label: "To Year",
                                         controller: endYearController,
                                         keyboardType: TextInputType.number,
                                         validator: (value) {
@@ -435,7 +405,7 @@ class _ExperienceState extends State<Experience> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 15),
+                            const SizedBox(height: 15),
                             if (experiences.isNotEmpty) ...[
                               Text(
                                 'Added Experiences',
@@ -445,9 +415,15 @@ class _ExperienceState extends State<Experience> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
+                              const SizedBox(height: 8),
                               ...experiences.asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final experience = entry.value;
+
+                                // Skip displaying "Fresher" placeholder entries
+                                if (experience['company'] == 'Fresher') {
+                                  return const SizedBox.shrink();
+                                }
 
                                 return Container(
                                   margin: const EdgeInsets.only(bottom: 8),
@@ -467,7 +443,7 @@ class _ExperienceState extends State<Experience> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              experience['company'],
+                                              experience['company'] ?? '',
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 16,
@@ -476,7 +452,7 @@ class _ExperienceState extends State<Experience> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              experience['position'],
+                                              experience['position'] ?? '',
                                               style: TextStyle(
                                                 color: Colors.white.withOpacity(
                                                   0.7,
@@ -486,37 +462,7 @@ class _ExperienceState extends State<Experience> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              experience['fromMonth'] ?? '',
-                                              style: TextStyle(
-                                                color: Colors.white.withOpacity(
-                                                  0.7,
-                                                ),
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              experience['fromYear'],
-                                              style: TextStyle(
-                                                color: Colors.white.withOpacity(
-                                                  0.7,
-                                                ),
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              experience['toMonth'] ?? '',
-                                              style: TextStyle(
-                                                color: Colors.white.withOpacity(
-                                                  0.7,
-                                                ),
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              experience['toYear'],
+                                              '${experience['fromMonth'] ?? ''} ${experience['fromYear'] ?? ''} - ${experience['toMonth'] ?? ''} ${experience['toYear'] ?? ''}',
                                               style: TextStyle(
                                                 color: Colors.white.withOpacity(
                                                   0.7,
@@ -526,7 +472,7 @@ class _ExperienceState extends State<Experience> {
                                             ),
                                             const SizedBox(height: 6),
                                             Text(
-                                              experience['description'],
+                                              experience['description'] ?? '',
                                               style: TextStyle(
                                                 color: Colors.white.withOpacity(
                                                   0.7,
@@ -552,8 +498,29 @@ class _ExperienceState extends State<Experience> {
                                     ],
                                   ),
                                 );
-                              }),
+                              }).toList(),
                             ],
+                            if (experiences.isEmpty)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'Fresher',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -575,7 +542,7 @@ class _ExperienceState extends State<Experience> {
                   bool next = func.unlockpage(pageindex);
 
                   if (next) {
-                    widget.onNext.call(); // Navigate to next page
+                    widget.onNext.call();
                   }
                 },
                 style: ElevatedButton.styleFrom(

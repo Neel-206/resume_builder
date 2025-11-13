@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resume_builder/pages/create_resume.dart';
+import 'package:resume_builder/pages/resume_data.dart';
 import 'package:resume_builder/pages/show_resume_new.dart';
 import 'package:resume_builder/services/func.dart';
 
@@ -88,6 +89,7 @@ class _HomePageState extends State<HomePage> {
                             width: logoWidth,
                             height: maxHeight * 0.5,
                             decoration: BoxDecoration(
+                              // ignore: deprecated_member_use
                               color: Colors.white.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -205,6 +207,67 @@ class _HomePageState extends State<HomePage> {
                                       Expanded(
                                         child: Text(
                                           'Create New Resume',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontSize: screenWidth * 0.045,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.025),
+                                ElevatedButton(onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => ResumeData(),
+                                    ),
+                                  );
+                                },
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(
+                                      double.infinity,
+                                      screenHeight * 0.07,
+                                    ),
+                                    backgroundColor: Colors.purpleAccent.shade700,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.07,
+                                      vertical: screenHeight * 0.018,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(56),
+                                    ),
+                                    elevation: 6,
+                                    shadowColor: Colors.purpleAccent.withOpacity(
+                                      0.7,
+                                    ),
+                                    textStyle: TextStyle(
+                                      fontSize: screenWidth * 0.045,
+                                      overflow: TextOverflow.ellipsis,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      // Conditionally display the Icon based on screenWidth
+                                      if (screenWidth * 0.07 > 24) // Example threshold
+                                        Icon(
+                                          Icons.person_outline,
+                                          color: Colors.white,
+                                          size: screenWidth * 0.07,
+                                        )
+                                      else
+                                        const Icon(
+                                          Icons.person_outline,
+                                          color: Colors.white,
+                                          size: 24, // Minimum size
+                                      ),
+                                      SizedBox(width: screenWidth * 0.04),
+                                      Expanded(
+                                        child: Text(
+                                          'My Resume'+"'s"+' Data',
                                           style: TextStyle(
                                             color: Colors.white,
                                             overflow: TextOverflow.ellipsis,
