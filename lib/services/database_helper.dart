@@ -231,9 +231,14 @@ class DatabaseHelper {
   }
 
   // Queries all rows from the specified [table].
-  Future<List<Map<String, dynamic>>> queryAllRows(String table, {String? where, List<dynamic>? whereArgs}) async {
+  Future<List<Map<String, dynamic>>> queryAllRows(String table,
+      {String? where,
+      List<dynamic>? whereArgs,
+      String? orderBy,
+      int? limit}) async {
     Database db = await instance.database;
-    return await db.query(table, where: where, whereArgs: whereArgs);
+    return await db.query(table,
+        where: where, whereArgs: whereArgs, orderBy: orderBy, limit: limit);
   }
 
   // Updates a row in the specified [table]. The map must contain an 'id' key.
@@ -265,5 +270,36 @@ class DatabaseHelper {
   Future<void> clearTable(String table) async {
     Database db = await instance.database;
     await db.delete(table);
+  }
+
+  /// Deletes all data associated with a specific resumeId from all tables.
+  Future<void> deleteAllDataForResume(int resumeId) async {
+    final db = await instance.database;
+    final batch = db.batch();
+    final whereClause = 'resumeId = ?';
+    final whereArgs = [resumeId];
+
+    // List of all tables that have resume data
+    final tables = [
+      tableProfile,
+      tableAbout,
+      tableAwards,
+      tableEducation,
+      tableExperience,
+      tableSkills,
+      tableProjects,
+      tableHobbies,
+      tableLanguages,
+      tableAppReferences,
+      tableSavedResumes,
+    ];
+
+    // Add a delete operation for each table to the batch
+    for (final table in tables) {
+      batch.delete(table, where: whereClause, whereArgs: whereArgs);
+    }
+
+    // Commit the batch operation
+    await batch.commit(noResult: true);
   }
 }

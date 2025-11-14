@@ -53,6 +53,7 @@ class _ExperienceState extends State<Experience> {
       DatabaseHelper.tableExperience,
       where: 'resumeId = ?',
       whereArgs: [widget.resumeId],
+      orderBy: 'id',
     );
     if (mounted) {
       setState(() {

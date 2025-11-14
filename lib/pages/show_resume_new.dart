@@ -5,6 +5,7 @@ import 'package:resume_builder/pages/pdf_preview_page.dart';
 import 'package:resume_builder/pages/create_resume.dart';
 import 'package:resume_builder/services/resume_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:resume_builder/services/database_helper.dart';
 import 'package:pdf_thumbnail/pdf_thumbnail.dart';
 
 class ShowResume extends StatefulWidget {
@@ -65,12 +66,27 @@ class _ShowResumeState extends State<ShowResume>
 
   /// Deletes a resume with confirmation
   Future<void> _deleteResume(Map<String, dynamic> resume) async {
+    final int? resumeId = resume['resumeId'];
+    if (resumeId == null) {
+      _showSnackBar('Error: Resume ID not found.', isError: true);
+      return;
+    }
+
     try {
+      // Delete the PDF file from storage
       await ResumeStorage.deleteResume(resume['filePath']);
-      await _loadResumes();
+
+      // Delete all associated data from the database
+      final dbHelper = DatabaseHelper.instance;
+      await dbHelper.deleteAllDataForResume(resumeId);
+
+      // Show success message
       if (mounted) {
         _showSnackBar('Resume deleted successfully');
       }
+
+      // Refresh the list of resumes
+      await _loadResumes();
     } catch (e) {
       if (mounted) {
         _showSnackBar('Error deleting resume: $e', isError: true);
@@ -92,10 +108,19 @@ class _ShowResumeState extends State<ShowResume>
   }
 
 
-  void _editResume(Map<String, dynamic> resume) {
+  void _editResume(Map<String, dynamic> resume) async {
     final int resumeId = resume['resumeId'] ?? DateTime.now().millisecondsSinceEpoch;
     final String? originalFilePath = resume['filePath'];
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreateResume(resumeId: resumeId, originalFilePath: originalFilePath)));
+
+    // Await for the user to return from the edit screen
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => CreateResume(
+            resumeId: resumeId, originalFilePath: originalFilePath)));
+
+    // After returning, reload the resumes to reflect any changes.
+    if (mounted) {
+      _loadResumes();
+    }
   }
 
   @override

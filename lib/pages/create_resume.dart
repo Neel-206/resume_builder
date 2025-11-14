@@ -23,11 +23,13 @@ class CreateResume extends StatefulWidget {
   final int? resumeId;
   final String? originalFilePath;
   final int initialPage;
+  final bool singlePageMode;
   const CreateResume(
       {super.key,
       this.resumeId,
       this.originalFilePath,
-      this.initialPage = 0});
+      this.initialPage = 0,
+      this.singlePageMode = false});
 
   @override
   State<CreateResume> createState() => _CreateResumeState();
@@ -54,46 +56,55 @@ class _CreateResumeState extends State<CreateResume> {
       DatabaseHelper.tableProfile,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final awards = await dbHelper.queryAllRows(
       DatabaseHelper.tableAwards,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final about = await dbHelper.queryAllRows(
       DatabaseHelper.tableAbout,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final education = await dbHelper.queryAllRows(
       DatabaseHelper.tableEducation,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final hobbies = await dbHelper.queryAllRows(
       DatabaseHelper.tableHobbies,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final languages = await dbHelper.queryAllRows(
       DatabaseHelper.tableLanguages,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final projects = await dbHelper.queryAllRows(
       DatabaseHelper.tableProjects,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final references = await dbHelper.queryAllRows(
       DatabaseHelper.tableAppReferences,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     final experience = await dbHelper.queryAllRows(
       DatabaseHelper.tableExperience,
       where: 'resumeId = ?',
       whereArgs: [_resumeId],
+      orderBy: 'id',
     );
     // final skills = await dbHelper.queryAllRows(
     //   DatabaseHelper.tableSkills,
@@ -227,6 +238,7 @@ class _CreateResumeState extends State<CreateResume> {
                 ),
               ),
               const SizedBox(height: 20),
+              if (!widget.singlePageMode)
               SingleChildScrollView(
                 controller: tabScrollController,
                 scrollDirection: Axis.horizontal,
@@ -332,7 +344,7 @@ class _CreateResumeState extends State<CreateResume> {
               const SizedBox(height: 20),
               Expanded(
                 child: GestureDetector(
-                  onHorizontalDragEnd: (DragEndDetails details) {
+                  onHorizontalDragEnd: widget.singlePageMode ? null : (DragEndDetails details) {
                     final velocity = details.primaryVelocity ?? 0;
                     // Negative velocity -> user swiped left (forward)
                     if (velocity < 0) {
@@ -400,83 +412,132 @@ class _CreateResumeState extends State<CreateResume> {
                         case 0:
                           return profilepage(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true); // Return true to indicate changes
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 1:
                           return awardpage(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 2:
                           return Aboutme(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 3:
                           return Education(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 4:
                           return Hobbies(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 5:
                           return Languages(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 6:
                           return Projects(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 7:
                           return References(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 8:
                           return Experience(
                             resumeId: _resumeId,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
+                              }
+                            },
                           );
                         case 9:
                           return Skills(
                             resumeId: _resumeId,
                             originalFilePath: widget.originalFilePath,
-                            onNext: () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
+                            onNext: () {
+                              // If we are editing, onNext from skills should probably go back
+                              // The calling screen will handle the refresh.
+                              if (widget.singlePageMode ||
+                                  widget.originalFilePath != null) {
+                                Navigator.of(context).pop(true);
+                              }
+                            },
                           );
                         default:
                           return Center(child: Text('Page not found'));

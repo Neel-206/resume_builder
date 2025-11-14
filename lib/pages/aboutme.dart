@@ -28,7 +28,8 @@ class _AboutmeState extends State<Aboutme> {
   }
 
   void _loadAboutData() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout,
+        where: 'resumeId = ?', whereArgs: [widget.resumeId], orderBy: 'id');
     if (allRows.isNotEmpty) {
       setState(() {
         aboutController.text = allRows.first['aboutText'] ?? '';
@@ -42,7 +43,8 @@ class _AboutmeState extends State<Aboutme> {
       'resumeId': widget.resumeId,
     };
 
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout,
+        where: 'resumeId = ?', whereArgs: [widget.resumeId], orderBy: 'id');
     if (allRows.isEmpty) {
       await dbHelper.insert(DatabaseHelper.tableAbout, row);
     } else {

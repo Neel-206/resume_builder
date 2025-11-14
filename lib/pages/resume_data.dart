@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:resume_builder/pages/create_resume.dart';
+import 'package:resume_builder/pages/pdf_preview_page.dart';
 import 'package:resume_builder/services/database_helper.dart';
+import 'package:resume_builder/services/pdf_service.dart';
 
 class ResumeData extends StatefulWidget {
   const ResumeData({super.key});
@@ -103,7 +106,8 @@ class _ResumeDataState extends State<ResumeData> {
 
   void _loadResumeIds() async {
     final dbHelper = DatabaseHelper.instance;
-    final profiles = await dbHelper.queryAllRows(DatabaseHelper.tableProfile);
+    final profiles =
+        await dbHelper.queryAllRows(DatabaseHelper.tableProfile, orderBy: 'id');
     final ids = profiles.map((p) => p['resumeId'] as int).toSet().toList();
     ids.sort((a, b) => b.compareTo(a)); // Show newest first
     if (mounted) {
@@ -123,51 +127,61 @@ class _ResumeDataState extends State<ResumeData> {
         DatabaseHelper.tableProfile,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "About": await dbHelper.queryAllRows(
         DatabaseHelper.tableAbout,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "Education": await dbHelper.queryAllRows(
         DatabaseHelper.tableEducation,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "Experience": await dbHelper.queryAllRows(
         DatabaseHelper.tableExperience,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "Skills": await dbHelper.queryAllRows(
         DatabaseHelper.tableSkills,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "Projects": await dbHelper.queryAllRows(
         DatabaseHelper.tableProjects,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "Awards": await dbHelper.queryAllRows(
         DatabaseHelper.tableAwards,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "Languages": await dbHelper.queryAllRows(
         DatabaseHelper.tableLanguages,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "Hobbies": await dbHelper.queryAllRows(
         DatabaseHelper.tableHobbies,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
       "References": await dbHelper.queryAllRows(
         DatabaseHelper.tableAppReferences,
         where: whereClause,
         whereArgs: whereArgs,
+        orderBy: 'id',
       ),
     };
 
@@ -199,6 +213,7 @@ class _ResumeDataState extends State<ResumeData> {
             DatabaseHelper.tableProfile,
             where: 'resumeId = ?',
             whereArgs: [resumeId],
+            orderBy: 'id',
           ),
           builder: (context, snapshot) {
             final resumeDate = DateTime.fromMillisecondsSinceEpoch(resumeId);
@@ -238,18 +253,33 @@ class _ResumeDataState extends State<ResumeData> {
                       }
                     });
                   },
-                  title: Text(
-                    titleText,
-                    style: GoogleFonts.poppins(
-                      textStyle: TextStyle(
-                        color: Colors.white,
-                        fontSize: screenWidth * 0.045,
-                        fontWeight: FontWeight.w500,
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          titleText,
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              color: Colors.white,
+                              fontSize: screenWidth * 0.045,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      IconButton(
+                        icon: Icon(Icons.style_outlined,
+                            color: Colors.white.withOpacity(0.8)),
+                        onPressed: () => _changeTemplate(resumeId),
+                        tooltip: 'Change Template',
+                        splashRadius: 20,
+                      ),
+                    ],
                   ),
                   iconColor: Colors.white,
                   collapsedIconColor: Colors.white,
+                  tilePadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                   children: isSelected
                       ? _selectedResumeData.entries.map((entry) {
                           return _buildSectionExpansionTile(
@@ -268,7 +298,84 @@ class _ResumeDataState extends State<ResumeData> {
     );
   }
 
-  void _navigateToEdit(String sectionTitle) {
+  // Helper function to show snackbar messages
+  void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red.shade600 : Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  Future<void> _regeneratePdfForResume(int resumeId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final pdfService = PdfService();
+
+    // Find all saved resume files associated with this resumeId
+    final savedResumes = await dbHelper.queryAllRows(
+      DatabaseHelper.tableSavedResumes,
+      where: 'resumeId = ?',
+      whereArgs: [resumeId],
+    );
+
+    if (savedResumes.isNotEmpty) {
+      _showSnackBar('Updating saved resume(s)...');
+      for (final resumeInfo in savedResumes) {
+        try {
+          final templateName = resumeInfo['templateName'] as String;
+          final filePath = resumeInfo['filePath'] as String;
+          final pdfData =
+              await pdfService.createResume(templateName, resumeId);
+          await File(filePath).writeAsBytes(pdfData);
+        } catch (e) {
+          _showSnackBar('Failed to update ${resumeInfo['fileName']}: $e',
+              isError: true);
+        }
+      }
+      _showSnackBar('Saved resume(s) updated successfully!');
+    }
+  }
+
+  void _changeTemplate(int resumeId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final savedResumes = await dbHelper.queryAllRows(
+      DatabaseHelper.tableSavedResumes,
+      where: 'resumeId = ?',
+      whereArgs: [resumeId],
+      // Get the most recently saved one to know its path and template
+      orderBy: 'createdAt DESC',
+      limit: 1,
+    );
+
+    if (savedResumes.isEmpty) {
+      _showSnackBar(
+          'No saved resume found to change template. Please create one first.',
+          isError: true);
+      return;
+    }
+
+    final resumeInfo = savedResumes.first;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewPage(
+          path: resumeInfo['filePath'],
+          resumeId: resumeId,
+          templateName: resumeInfo['templateName'],
+          originalFilePath: resumeInfo['filePath'],
+          isViewingOnly: false, // This enables the save/edit buttons
+        ),
+      ),
+    );
+    // Refresh the data on this screen after returning.
+    _regeneratePdfForResume(resumeId);
+  }
+
+  void _navigateToEdit(String sectionTitle) async {
     final Map<String, int> sectionPageIndex = {
       'Profile': 0,
       'Awards': 1,
@@ -284,12 +391,20 @@ class _ResumeDataState extends State<ResumeData> {
 
     final pageIndex = sectionPageIndex[sectionTitle] ?? 0;
 
-    Navigator.of(context).push(
+    final result = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) =>
-            CreateResume(resumeId: _selectedResumeId, initialPage: pageIndex),
+        builder: (context) => CreateResume(
+            resumeId: _selectedResumeId,
+            initialPage: pageIndex,
+            singlePageMode: true),
       ),
     );
+
+    // If result is true, it means data was saved. Reload the data.
+    if (result == true && _selectedResumeId != null && mounted) {
+      _loadDataForResume(_selectedResumeId!);
+      _regeneratePdfForResume(_selectedResumeId!);
+    }
   }
 
   Widget _buildSectionExpansionTile(

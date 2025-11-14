@@ -54,14 +54,16 @@ class _ChooseTemplateState extends State<ChooseTemplate> {
     await file.writeAsBytes(pdfBytes);
     setState(() => isLoading = false);
     if (!mounted) return;
-    Navigator.of(context).push(
+
+    // Replace the current page with the preview page to show the new template
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => PdfPreviewPage(
           path: file.path,
           resumeId: widget.resumeId,
           templateName: templateName,
-          originalFilePath: widget.originalFilePath,
-          isViewingOnly: false,
+          originalFilePath: widget.originalFilePath, // Pass this along
+          isViewingOnly: false, // Keep it in edit mode
         ),
       ),
     );

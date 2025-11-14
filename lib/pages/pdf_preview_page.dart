@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:printing/printing.dart';
+import 'package:resume_builder/pages/choose_template.dart';
 import 'package:resume_builder/pages/home_page.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:resume_builder/services/resume_storage.dart';
@@ -142,6 +143,19 @@ class PdfPreviewPage extends StatelessWidget {
                 buildDownloadAndSaveButton(context) // For new resumes
               else
                 buildSaveChangesButton(context), // For edited resumes
+
+              // Change Template Button - only shown when not just viewing
+              if (!isViewingOnly)
+                _buildActionButton(
+                  context: context,
+                  icon: Icons.style_outlined,
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ChooseTemplate(
+                            resumeId: resumeId,
+                            originalFilePath: originalFilePath)));
+                  },
+                ),
             ],
           ),
         ),
