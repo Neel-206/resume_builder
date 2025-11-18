@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:resume_builder/pages/aboutme.dart';
 import 'package:resume_builder/pages/award_page.dart';
+import 'package:resume_builder/pages/choose_template.dart';
 import 'package:resume_builder/pages/education.dart';
 import 'package:resume_builder/services/database_helper.dart';
 import 'package:resume_builder/pages/experiance.dart';
@@ -412,6 +413,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 0:
                           return profilepage(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true); // Return true to indicate changes
@@ -425,6 +427,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 1:
                           return awardpage(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -438,6 +441,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 2:
                           return Aboutme(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -451,6 +455,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 3:
                           return Education(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -464,6 +469,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 4:
                           return Hobbies(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -477,6 +483,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 5:
                           return Languages(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -490,6 +497,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 6:
                           return Projects(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -503,6 +511,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 7:
                           return References(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -516,6 +525,7 @@ class _CreateResumeState extends State<CreateResume> {
                         case 8:
                           return Experience(
                             resumeId: _resumeId,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
@@ -530,11 +540,15 @@ class _CreateResumeState extends State<CreateResume> {
                           return Skills(
                             resumeId: _resumeId,
                             originalFilePath: widget.originalFilePath,
+                            singlePageMode: widget.singlePageMode,
                             onNext: () {
-                              // If we are editing, onNext from skills should probably go back
-                              // The calling screen will handle the refresh.
-                              if (widget.singlePageMode ||
-                                  widget.originalFilePath != null) {
+                              if (widget.singlePageMode) {
+                                Navigator.of(context).pop(true);
+                              } else {
+                                // This is the final step in creation, so navigate to choose a template.
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => ChooseTemplate(resumeId: _resumeId),
+                                ));
                                 Navigator.of(context).pop(true);
                               }
                             },

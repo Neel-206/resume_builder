@@ -9,7 +9,7 @@ class References extends StatefulWidget {
 
   final int resumeId;
 
-  const References({super.key, this.onNext, required this.resumeId});
+  const References({super.key, this.onNext, required this.resumeId, required bool singlePageMode});
 
   @override
   State<References> createState() => _ReferencesState();

@@ -10,7 +10,8 @@ class Aboutme extends StatefulWidget {
 
   final int resumeId;
 
-  const Aboutme({super.key, this.onNext, required this.resumeId});
+  final bool singlePageMode;
+  const Aboutme({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<Aboutme> createState() => _AboutmeState();
@@ -175,7 +176,7 @@ class _AboutmeState extends State<Aboutme> {
               );
             }
           },
-          child: Text('Next'),
+          child: Text(widget.singlePageMode ? 'Save' : 'Next'),
           style: ElevatedButton.styleFrom(
             minimumSize: Size(double.infinity, 62),
             backgroundColor: Color.fromARGB(255, 111, 101, 247),

@@ -6,7 +6,8 @@ import 'package:resume_builder/services/func.dart';
 class profilepage extends StatefulWidget {
   final VoidCallback? onNext;
   final int resumeId;
-  const profilepage({super.key, this.onNext, required this.resumeId});
+  final bool singlePageMode;
+  const profilepage({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<profilepage> createState() => _profilepageState();
@@ -328,7 +329,8 @@ class _profilepageState extends State<profilepage> {
               );
             }
           },
-          child: Text('Next'),
+          //child: Text('Next'),
+          child: Text(widget.singlePageMode ? 'Save' : 'Next'),
           style: ElevatedButton.styleFrom(
             minimumSize: Size(double.infinity, 62),
             backgroundColor: Color.fromARGB(255, 111, 101, 247),

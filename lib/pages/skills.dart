@@ -10,7 +10,13 @@ class Skills extends StatefulWidget {
   final VoidCallback? onNext;
   final int resumeId;
   final String? originalFilePath;
-  const Skills({super.key, this.onNext, required this.resumeId, this.originalFilePath});
+  final bool singlePageMode;
+  const Skills(
+      {super.key,
+      this.onNext,
+      required this.resumeId,
+      this.originalFilePath,
+      this.singlePageMode = false});
 
   @override
   State<Skills> createState() => _SkillsState();
@@ -346,20 +352,13 @@ class _SkillsState extends State<Skills> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if (skills.isNotEmpty) {
-                    bool next = func.unlockpage(pageindex);
-
-                    if (next && widget.onNext != null) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => ChooseTemplate(resumeId: widget.resumeId, originalFilePath: widget.originalFilePath),
-                        ),
-                      );
-                    }
+                  if (skills.isNotEmpty || widget.singlePageMode) {
+                    func.unlockpage(pageindex); // Unlock the page
+                    widget.onNext?.call(); // Navigate to next page or pop
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Please enter at list one Skill...'),
+                      const SnackBar(
+                        content: Text('Please add at least one skill.'),
                       ),
                     );
                   }
@@ -454,8 +453,7 @@ class _SkillsState extends State<Skills> {
                   ),
                 ),
               ),
-            ),
-          ],
+          )  ],
         ),
       ),
     );

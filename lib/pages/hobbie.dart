@@ -8,8 +8,13 @@ import 'package:resume_builder/services/func.dart';
 class Hobbies extends StatefulWidget {
   final VoidCallback? onNext;
   final int resumeId;
-  const Hobbies({super.key, this.onNext, required this.resumeId});
+  final bool singlePageMode;
 
+  const Hobbies(
+      {super.key,
+      this.onNext,
+      required this.resumeId,
+      this.singlePageMode = false});
   @override
   State<Hobbies> createState() => _HobbiesState();
 }
@@ -326,78 +331,80 @@ class _HobbiesState extends State<Hobbies> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                //child: const Text('Next'),
+                child: Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),
-            Container(
-              width: 62,
-              height: 62,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(56),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 30,
-                    offset: const Offset(0, 15),
-                    spreadRadius: -5,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(56),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(56),
-                      color: Colors.white.withOpacity(0.1),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.60),
-                        width: 0.5,
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.5),
-                          Colors.white.withOpacity(0.1),
-                        ],
-                        stops: const [0.0, 1.0],
-                      ),
+            if (!widget.singlePageMode) // Only show add button if not in single page mode
+              Container(
+                width: 62,
+                height: 62,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(56),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 30,
+                      offset: const Offset(0, 15),
+                      spreadRadius: -5,
                     ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _addHobby,
-                        splashFactory: InkRipple.splashFactory,
-                        splashColor: Colors.white.withOpacity(0.2),
-                        highlightColor: Colors.white.withOpacity(0.1),
-                        child: Center(
-                          child: ShaderMask(
-                            shaderCallback: (Rect bounds) {
-                              return LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Colors.white.withOpacity(1),
-                                  Colors.white.withOpacity(0.8),
-                                ],
-                              ).createShader(bounds);
-                            },
-                            child: const Icon(
-                              Icons.add_rounded,
-                              color: Colors.white,
-                              size: 32,
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(56),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(56),
+                        color: Colors.white.withOpacity(0.1),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.60),
+                          width: 0.5,
+                        ),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.5),
+                            Colors.white.withOpacity(0.1),
+                          ],
+                          stops: const [0.0, 1.0],
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _addHobby,
+                          splashFactory: InkRipple.splashFactory,
+                          splashColor: Colors.white.withOpacity(0.2),
+                          highlightColor: Colors.white.withOpacity(0.1),
+                          child: Center(
+                            child: ShaderMask(
+                              shaderCallback: (Rect bounds) {
+                                return LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.white.withOpacity(1),
+                                    Colors.white.withOpacity(0.8),
+                                  ],
+                                ).createShader(bounds);
+                              },
+                              child: const Icon(
+                                Icons.add_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                )
               ),
-            ),
           ],
         ),
       ),

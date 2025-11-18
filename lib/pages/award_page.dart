@@ -8,7 +8,8 @@ import 'package:resume_builder/services/func.dart';
 class awardpage extends StatefulWidget {
   final VoidCallback? onNext;
   final int resumeId;
-  const awardpage({super.key, this.onNext, required this.resumeId});
+  final bool singlePageMode;
+  const awardpage({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<awardpage> createState() => _awardpageState();
@@ -386,10 +387,9 @@ class _awardpageState extends State<awardpage> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  bool next = func.unlockpage(pageindex);
-              
-              if(next && widget.onNext != null){
-                widget.onNext?.call();// Navigate to next page
+                  if (widget.onNext != null) {
+                    func.unlockpage(pageindex); // Unlock the page
+                    widget.onNext?.call(); // Navigate to next page or pop
               }
                   // if (widget.onNext != null) {
                   //   widget.onNext!();
@@ -414,7 +414,7 @@ class _awardpageState extends State<awardpage> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child: Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),

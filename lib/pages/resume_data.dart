@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:resume_builder/pages/choose_template.dart';
 import 'package:resume_builder/pages/create_resume.dart';
 import 'package:resume_builder/pages/pdf_preview_page.dart';
 import 'package:resume_builder/services/database_helper.dart';
@@ -83,6 +85,74 @@ class _ResumeDataState extends State<ResumeData> {
           ),
         ),
       ),
+      floatingActionButton: Container(
+        width: 62,
+        height: 62,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(56),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+              spreadRadius: -5,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(56),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(56),
+                color: Colors.white.withOpacity(0.1),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.60),
+                  width: 0.5,
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.5),
+                    Colors.white.withOpacity(0.1),
+                  ],
+                  stops: const [0.0, 1.0],
+                ),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _showAddResumeDialog,
+                  splashFactory: InkRipple.splashFactory,
+                  splashColor: Colors.white.withOpacity(0.2),
+                  highlightColor: Colors.white.withOpacity(0.1),
+                  child: Center(
+                    child: ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(1),
+                            Colors.white.withOpacity(0.8),
+                          ],
+                        ).createShader(bounds);
+                      },
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -101,6 +171,77 @@ class _ResumeDataState extends State<ResumeData> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showAddResumeDialog() {
+    final formKey = GlobalKey<FormState>();
+    final firstNameController = TextEditingController();
+    final lastNameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Create New Resume'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: firstNameController,
+                  decoration: const InputDecoration(labelText: 'First Name'),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a first name.';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: lastNameController,
+                  decoration: const InputDecoration(labelText: 'Last Name'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop(); // Close dialog
+
+                  final newResumeId = DateTime.now().millisecondsSinceEpoch;
+                  final dbHelper = DatabaseHelper.instance;
+
+                  await dbHelper.insert(DatabaseHelper.tableProfile, {
+                    'resumeId': newResumeId,
+                    'firstName': firstNameController.text.trim(),
+                    'lastName': lastNameController.text.trim(),
+                  });
+
+                  // final result = await Navigator.of(context).push(
+                  //   MaterialPageRoute(
+                  //     builder: (context) => CreateResume(resumeId: newResumeId),
+                  //   ),
+                  // );
+
+                  if (mounted) {
+                    _loadResumeIds();
+                    _showSnackBar('New resume created!');
+                  }
+                }
+              },
+              child: const Text('Create'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -147,12 +288,6 @@ class _ResumeDataState extends State<ResumeData> {
         whereArgs: whereArgs,
         orderBy: 'id',
       ),
-      "Skills": await dbHelper.queryAllRows(
-        DatabaseHelper.tableSkills,
-        where: whereClause,
-        whereArgs: whereArgs,
-        orderBy: 'id',
-      ),
       "Projects": await dbHelper.queryAllRows(
         DatabaseHelper.tableProjects,
         where: whereClause,
@@ -179,6 +314,12 @@ class _ResumeDataState extends State<ResumeData> {
       ),
       "References": await dbHelper.queryAllRows(
         DatabaseHelper.tableAppReferences,
+        where: whereClause,
+        whereArgs: whereArgs,
+        orderBy: 'id',
+      ),
+      "Skills": await dbHelper.queryAllRows(
+        DatabaseHelper.tableSkills,
         where: whereClause,
         whereArgs: whereArgs,
         orderBy: 'id',
@@ -347,32 +488,36 @@ class _ResumeDataState extends State<ResumeData> {
       DatabaseHelper.tableSavedResumes,
       where: 'resumeId = ?',
       whereArgs: [resumeId],
-      // Get the most recently saved one to know its path and template
       orderBy: 'createdAt DESC',
       limit: 1,
     );
 
-    if (savedResumes.isEmpty) {
-      _showSnackBar(
-          'No saved resume found to change template. Please create one first.',
-          isError: true);
-      return;
+    if (savedResumes.isNotEmpty && mounted) {
+      // If a resume PDF already exists, show it in the preview page.
+      final resumeInfo = savedResumes.first;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PdfPreviewPage(
+            path: resumeInfo['filePath'],
+            resumeId: resumeId,
+            templateName: resumeInfo['templateName'],
+            originalFilePath: resumeInfo['filePath'],
+            isViewingOnly: false,
+          ),
+        ),
+      );
+    } else if (mounted) {
+      // If no resume PDF exists, go to the template chooser.
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => ChooseTemplate(resumeId: resumeId)),
+      );
     }
 
-    final resumeInfo = savedResumes.first;
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PdfPreviewPage(
-          path: resumeInfo['filePath'],
-          resumeId: resumeId,
-          templateName: resumeInfo['templateName'],
-          originalFilePath: resumeInfo['filePath'],
-          isViewingOnly: false, // This enables the save/edit buttons
-        ),
-      ),
-    );
-    // Refresh the data on this screen after returning.
-    _regeneratePdfForResume(resumeId);
+    // After returning from the template selection and preview,
+    // check if any PDFs were updated and reflect the changes.
+    if (mounted) {
+      _regeneratePdfForResume(resumeId);
+    }
   }
 
   void _navigateToEdit(String sectionTitle) async {

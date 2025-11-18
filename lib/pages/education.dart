@@ -7,8 +7,9 @@ import 'package:resume_builder/services/database_helper.dart';
 class Education extends StatefulWidget {
  final VoidCallback? onNext;
 
-  final int resumeId; // Make resumeId final
-  const Education({super.key, this.onNext, required this.resumeId});
+  final int resumeId;
+  final bool singlePageMode;
+  const Education({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
   @override
   State<Education> createState() => _EducationState();
 }

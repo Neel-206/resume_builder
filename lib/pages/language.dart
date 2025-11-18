@@ -7,7 +7,8 @@ import 'package:resume_builder/services/database_helper.dart';
 class Languages extends StatefulWidget {
   final VoidCallback? onNext;
   final int resumeId;
-  const Languages({super.key, this.onNext, required this.resumeId});
+  final bool singlePageMode;
+  const Languages({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<Languages> createState() => _LanguagesState();

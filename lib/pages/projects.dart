@@ -8,7 +8,8 @@ class Projects extends StatefulWidget {
   final VoidCallback? onNext;
 
   final int resumeId;
-  const Projects({super.key, this.onNext, required this.resumeId});
+  final bool singlePageMode;
+  const Projects({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<Projects> createState() => _ProjectsState();

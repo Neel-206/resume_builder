@@ -8,8 +8,8 @@ import 'package:resume_builder/services/database_helper.dart';
 class Experience extends StatefulWidget {
   final VoidCallback onNext;
   final int resumeId;
-
-  const Experience({super.key, required this.onNext, required this.resumeId});
+  final bool singlePageMode;
+  const Experience({super.key, required this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<Experience> createState() => _ExperienceState();
@@ -565,7 +565,7 @@ class _ExperienceState extends State<Experience> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child: Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),
