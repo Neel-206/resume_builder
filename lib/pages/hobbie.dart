@@ -336,8 +336,7 @@ class _HobbiesState extends State<Hobbies> {
               ),
             ),
             const SizedBox(width: 12),
-            if (!widget.singlePageMode) // Only show add button if not in single page mode
-              Container(
+            Container(
                 width: 62,
                 height: 62,
                 decoration: BoxDecoration(
@@ -404,7 +403,7 @@ class _HobbiesState extends State<Hobbies> {
                     ),
                   ),
                 )
-              ),
+            ),
           ],
         ),
       ),

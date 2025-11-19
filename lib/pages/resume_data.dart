@@ -415,6 +415,13 @@ class _ResumeDataState extends State<ResumeData> {
                         tooltip: 'Change Template',
                         splashRadius: 20,
                       ),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline_rounded,
+                            color: Colors.white.withOpacity(0.8)),
+                        onPressed: () => _showDeleteDialog(resumeId, titleText),
+                        tooltip: 'Delete Resume Data',
+                        splashRadius: 20,
+                      ),
                     ],
                   ),
                   iconColor: Colors.white,
@@ -439,6 +446,70 @@ class _ResumeDataState extends State<ResumeData> {
     );
   }
 
+  void _showDeleteDialog(int resumeId, String resumeTitle) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white.withOpacity(0.95),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.all(24),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.red.shade400, Colors.red.shade600],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Delete Resume?',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'This will permanently delete "$resumeTitle" and all its data. This action cannot be undone.',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: Colors.grey.shade700,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteResume(resumeId);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Helper function to show snackbar messages
   void _showSnackBar(String message, {bool isError = false}) {
     if (!mounted) return;
@@ -451,6 +522,31 @@ class _ResumeDataState extends State<ResumeData> {
         margin: const EdgeInsets.all(16),
       ),
     );
+  }
+
+  Future<void> _deleteResume(int resumeId) async {
+    final dbHelper = DatabaseHelper.instance;
+
+    // Find and delete all associated saved PDF files
+    final savedResumes = await dbHelper.queryAllRows(
+      DatabaseHelper.tableSavedResumes,
+      where: 'resumeId = ?',
+      whereArgs: [resumeId],
+    );
+
+    for (final resumeFile in savedResumes) {
+      try {
+        await File(resumeFile['filePath']).delete();
+      } catch (e) {
+        print('Could not delete file ${resumeFile['filePath']}: $e');
+      }
+    }
+
+    // Delete all data from all tables for this resumeId
+    await dbHelper.deleteAllDataForResume(resumeId);
+
+    _showSnackBar('Resume data deleted successfully.');
+    _loadResumeIds(); // Refresh the list
   }
 
   Future<void> _regeneratePdfForResume(int resumeId) async {

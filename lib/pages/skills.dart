@@ -11,12 +11,13 @@ class Skills extends StatefulWidget {
   final int resumeId;
   final String? originalFilePath;
   final bool singlePageMode;
-  const Skills(
-      {super.key,
-      this.onNext,
-      required this.resumeId,
-      this.originalFilePath,
-      this.singlePageMode = false});
+  const Skills({
+    super.key,
+    this.onNext,
+    required this.resumeId,
+    this.originalFilePath,
+    this.singlePageMode = false,
+  });
 
   @override
   State<Skills> createState() => _SkillsState();
@@ -43,7 +44,11 @@ class _SkillsState extends State<Skills> {
   }
 
   void _loadSkills() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableSkills, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
+    final allRows = await dbHelper.queryAllRows(
+      DatabaseHelper.tableSkills,
+      where: 'resumeId = ?',
+      whereArgs: [widget.resumeId],
+    );
     if (mounted) {
       setState(() {
         skills.clear();
@@ -331,7 +336,6 @@ class _SkillsState extends State<Skills> {
                                   ),
                                 );
                               }).toList(),
-
                               const SizedBox(height: 24),
                             ],
                           ],
@@ -353,8 +357,28 @@ class _SkillsState extends State<Skills> {
               child: ElevatedButton(
                 onPressed: () async {
                   if (skills.isNotEmpty || widget.singlePageMode) {
-                    func.unlockpage(pageindex); // Unlock the page
-                    widget.onNext?.call(); // Navigate to next page or pop
+                    func.unlockpage(pageindex);
+
+                    // Conditional navigation based on mode
+                    if (widget.singlePageMode) {
+                      // Single page mode: pop back or use callback
+                      if (widget.onNext != null) {
+                        widget.onNext!.call();
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    } else {
+                      // Multi-page mode: navigate to ChooseTemplate
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChooseTemplate(
+                            resumeId: widget.resumeId,
+                            originalFilePath: widget.originalFilePath,
+                          ),
+                        ),
+                      );
+                    }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -453,7 +477,8 @@ class _SkillsState extends State<Skills> {
                   ),
                 ),
               ),
-          )  ],
+            ),
+          ],
         ),
       ),
     );
