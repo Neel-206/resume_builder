@@ -93,7 +93,28 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _navigateToHome() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomePage()
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const HomePage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Slide from right + fade transition
+          const beginOffset = Offset(1.0, 0.0);
+          const endOffset = Offset.zero;
+          final tween = Tween(
+            begin: beginOffset,
+            end: endOffset,
+          ).chain(CurveTween(curve: Curves.easeInOut));
+          final fadeTween = Tween(begin: 0.0, end: 1.0);
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: FadeTransition(
+              opacity: animation.drive(fadeTween),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 600),
       ),
     );
   }
@@ -127,7 +148,6 @@ class _SplashScreenState extends State<SplashScreen>
     _dotsController.dispose();
     super.dispose();
   }
-
 
   Widget _animatedLoadingDots() {
     return SpinKitSpinningLines(color: Colors.white, size: 50.0);
@@ -192,7 +212,6 @@ class _SplashScreenState extends State<SplashScreen>
                         ],
                       ),
                     ),
-                    
                   ),
                   const SizedBox(height: 10),
                   FadeTransition(
@@ -211,7 +230,7 @@ class _SplashScreenState extends State<SplashScreen>
                           ),
                         ],
                       ),
-                    ),  
+                    ),
                   ),
                   const SizedBox(height: 40),
                   _animatedLoadingDots(),
