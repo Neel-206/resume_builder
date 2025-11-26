@@ -177,7 +177,7 @@ class _ChooseTemplateState extends State<ChooseTemplate> {
                               ),
                             ),
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: .center,
                               children: [
                                 Expanded(
                                   child: Padding(
