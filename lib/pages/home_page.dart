@@ -1,11 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:resume_builder/pages/create_resume.dart';
 import 'package:resume_builder/pages/resume_data.dart';
 import 'package:resume_builder/pages/show_resume_new.dart';
 import 'package:resume_builder/services/func.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,13 +25,9 @@ class _HomePageState extends State<HomePage> {
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-            Color(0xff5f56ee),
-            Color(0xffe4d8fd),
-            Color(0xff9b8fff),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+            colors: [Color(0xff5f56ee), Color(0xffe4d8fd), Color(0xff9b8fff)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
         child: Container(
@@ -119,15 +115,72 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(height: screenHeight * 0.05),
                 Center(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.08,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(36),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.08,
+                    ),
+                    child: Stack(
+                      children: [
+                        LiquidGlassLayer(
+                          settings: const LiquidGlassSettings(
+                            thickness: 100, // thicker glass for depth
+                            refractiveIndex: 1.5, 
+                            lightAngle: 45,
+                            lightIntensity: 1.8, 
+                            ambientStrength:
+                                0.8, 
+                            saturation: 1.25, 
+                            visibility: 1.0,
+                          ),
+                          child: LiquidGlass(
+                            shape: LiquidRoundedSuperellipse(borderRadius: 48),
+                            glassContainsChild: false,
+                            
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(36),
+                              child: Container(
+                                height: screenWidth > 600
+                                      ? 400
+                                      : screenWidth * 0.7,
+                                constraints: BoxConstraints(
+                                  maxWidth: screenWidth > 600
+                                      ? 420
+                                      : screenWidth * 0.9,
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.06,
+                                  vertical: screenHeight * 0.04,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(36),
+                                  // border: Border.all(
+                                  //   color: Colors.white.withOpacity(0.3),
+                                  //   width: 1.5,
+                                  // ),
+                                  // boxShadow: [
+                                  //   BoxShadow(
+                                  //     color: Colors.deepPurple.withOpacity(0.2),
+                                  //     blurRadius: 30,
+                                  //     offset: Offset(0, 12),
+                                  //   ),
+                                  // ],
+                                  // gradient: LinearGradient(
+                                  //   colors: [
+                                  //     Colors.white.withOpacity(0.40),
+                                  //     Colors.white.withOpacity(0.15),
+                                  //   ],
+                                  //   begin: Alignment.topLeft,
+                                  //   end: Alignment.bottomRight,
+                                  // ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(36),
                           child: Container(
                             constraints: BoxConstraints(
                               maxWidth: screenWidth > 600
@@ -139,27 +192,27 @@ class _HomePageState extends State<HomePage> {
                               vertical: screenHeight * 0.04,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.25),
+                              color: Colors.transparent,
                               borderRadius: BorderRadius.circular(36),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.deepPurple.withOpacity(0.2),
-                                  blurRadius: 30,
-                                  offset: Offset(0, 12),
-                                ),
-                              ],
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.40),
-                                  Colors.white.withOpacity(0.15),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                              // border: Border.all(
+                              //   color: Colors.white.withOpacity(0.3),
+                              //   width: 1.5,
+                              // ),
+                              // boxShadow: [
+                              //   BoxShadow(
+                              //     color: Colors.deepPurple.withOpacity(0.2),
+                              //     blurRadius: 30,
+                              //     offset: Offset(0, 12),
+                              //   ),
+                              // ],
+                              // gradient: LinearGradient(
+                              //   colors: [
+                              //     Colors.white.withOpacity(0.40),
+                              //     Colors.white.withOpacity(0.15),
+                              //   ],
+                              //   begin: Alignment.topLeft,
+                              //   end: Alignment.bottomRight,
+                              // ),
                             ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -196,7 +249,8 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
                                     children: [
                                       Icon(
                                         Icons.edit_note,
@@ -206,68 +260,7 @@ class _HomePageState extends State<HomePage> {
                                       SizedBox(width: screenWidth * 0.04),
                                       Expanded(
                                         child: Text(
-                                          'Create New Resume',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            overflow: TextOverflow.ellipsis,
-                                            fontSize: screenWidth * 0.045,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: screenHeight * 0.025),
-                                ElevatedButton(onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => ResumeData(),
-                                    ),
-                                  );
-                                },
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(
-                                      double.infinity,
-                                      screenHeight * 0.07,
-                                    ),
-                                    backgroundColor: Colors.purpleAccent.shade700,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: screenWidth * 0.07,
-                                      vertical: screenHeight * 0.018,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(56),
-                                    ),
-                                    elevation: 6,
-                                    shadowColor: Colors.purpleAccent.withOpacity(
-                                      0.7,
-                                    ),
-                                    textStyle: TextStyle(
-                                      fontSize: screenWidth * 0.045,
-                                      overflow: TextOverflow.ellipsis,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      // Conditionally display the Icon based on screenWidth
-                                      if (screenWidth * 0.07 > 24) // Example threshold
-                                        Icon(
-                                          Icons.person_outline,
-                                          color: Colors.white,
-                                          size: screenWidth * 0.07,
-                                        )
-                                      else
-                                        const Icon(
-                                          Icons.person_outline,
-                                          color: Colors.white,
-                                          size: 24, // Minimum size
-                                      ),
-                                      SizedBox(width: screenWidth * 0.04),
-                                      Expanded(
-                                        child: Text(
-                                          'My Resume'+"'s"+' Data',
+                                          'Create Resume',
                                           style: TextStyle(
                                             color: Colors.white,
                                             overflow: TextOverflow.ellipsis,
@@ -283,8 +276,71 @@ class _HomePageState extends State<HomePage> {
                                   onPressed: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            ShowResume(),
+                                        builder: (context) => ResumeData(),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(
+                                      double.infinity,
+                                      screenHeight * 0.07,
+                                    ),
+                                    backgroundColor:
+                                        Colors.purpleAccent.shade700,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.07,
+                                      vertical: screenHeight * 0.018,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(56),
+                                    ),
+                                    elevation: 6,
+                                    shadowColor: Colors.purpleAccent
+                                        .withOpacity(0.7),
+                                    textStyle: TextStyle(
+                                      fontSize: screenWidth * 0.045,
+                                      overflow: TextOverflow.ellipsis,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      // Conditionally display the Icon based on screenWidth
+                                      if (screenWidth * 0.07 >
+                                          24) // Example threshold
+                                        Icon(
+                                          Icons.person_outline,
+                                          color: Colors.white,
+                                          size: screenWidth * 0.07,
+                                        )
+                                      else
+                                        const Icon(
+                                          Icons.person_outline,
+                                          color: Colors.white,
+                                          size: 24, // Minimum size
+                                        ),
+                                      SizedBox(width: screenWidth * 0.04),
+                                      Expanded(
+                                        child: Text(
+                                          'My Resume' + "'s" + ' Data',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontSize: screenWidth * 0.045,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.025),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => ShowResume(),
                                       ),
                                     );
                                   },
@@ -302,9 +358,8 @@ class _HomePageState extends State<HomePage> {
                                       borderRadius: BorderRadius.circular(56),
                                     ),
                                     elevation: 6,
-                                    shadowColor: Colors.amberAccent.withOpacity(
-                                      0.7,
-                                    ),
+                                    shadowColor: Colors.amberAccent
+                                        .withOpacity(0.7),
                                     textStyle: TextStyle(
                                       fontSize: screenWidth * 0.045,
                                       overflow: TextOverflow.ellipsis,
@@ -312,7 +367,8 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
                                     children: [
                                       Icon(
                                         Icons.folder_open_outlined,
@@ -337,7 +393,9 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                      ),
+                      
+                      
+                      ],
                     ),
                   ),
                 ),
