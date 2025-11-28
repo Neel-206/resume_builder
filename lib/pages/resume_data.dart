@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:glassmorphism_widgets/glassmorphism_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:resume_builder/pages/choose_template.dart';
@@ -85,69 +86,40 @@ class _ResumeDataState extends State<ResumeData> {
           ),
         ),
       ),
-      floatingActionButton: Container(
-        width: 62,
-        height: 62,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(56),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 30,
-              offset: const Offset(0, 15),
-              spreadRadius: -5,
-            ),
+      
+      floatingActionButton: GlassContainer(
+        width: 70,
+        height: 70,
+        borderRadius: BorderRadius.circular(35),
+        linearGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.3),
+            Colors.white.withOpacity(0.1),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(56),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(56),
-                color: Colors.white.withOpacity(0.1),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.60),
-                  width: 0.5,
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.5),
-                    Colors.white.withOpacity(0.1),
-                  ],
-                  stops: const [0.0, 1.0],
-                ),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _showAddResumeDialog,
-                  splashFactory: InkRipple.splashFactory,
-                  splashColor: Colors.white.withOpacity(0.2),
-                  highlightColor: Colors.white.withOpacity(0.1),
-                  child: Center(
-                    child: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(1),
-                            Colors.white.withOpacity(0.8),
-                          ],
-                        ).createShader(bounds);
-                      },
-                      child: const Icon(
-                        Icons.add_rounded,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                  ),
-                ),
+        blur: 15,
+        borderGradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.6),
+            Colors.white.withOpacity(0.3),
+          ],
+        ),
+        //borderWidth: 1.5,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(35),
+            onTap: _showAddResumeDialog,
+            splashFactory: InkRipple.splashFactory,
+            splashColor: Colors.white.withOpacity(0.4),
+            highlightColor: Colors.white.withOpacity(0.2),
+            child: const Center(
+              child: Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 30,
               ),
             ),
           ),
@@ -214,23 +186,14 @@ class _ResumeDataState extends State<ResumeData> {
             ElevatedButton(
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
-                  Navigator.of(dialogContext).pop(); // Close dialog
-
+                  Navigator.of(dialogContext).pop();
                   final newResumeId = DateTime.now().millisecondsSinceEpoch;
                   final dbHelper = DatabaseHelper.instance;
-
                   await dbHelper.insert(DatabaseHelper.tableProfile, {
                     'resumeId': newResumeId,
                     'firstName': firstNameController.text.trim(),
                     'lastName': lastNameController.text.trim(),
                   });
-
-                  // final result = await Navigator.of(context).push(
-                  //   MaterialPageRoute(
-                  //     builder: (context) => CreateResume(resumeId: newResumeId),
-                  //   ),
-                  // );
-
                   if (mounted) {
                     _loadResumeIds();
                     _showSnackBar('New resume created!');
@@ -250,7 +213,7 @@ class _ResumeDataState extends State<ResumeData> {
     final profiles =
         await dbHelper.queryAllRows(DatabaseHelper.tableProfile, orderBy: 'id');
     final ids = profiles.map((p) => p['resumeId'] as int).toSet().toList();
-    ids.sort((a, b) => b.compareTo(a)); // Show newest first
+    ids.sort((a, b) => b.compareTo(a));
     if (mounted) {
       setState(() {
         _resumeIds = ids;
@@ -375,7 +338,7 @@ class _ResumeDataState extends State<ResumeData> {
             final isSelected = _selectedResumeId == resumeId;
 
             return Padding(
-              padding: EdgeInsets.only(bottom: screenHeight * 0.02),
+              padding: EdgeInsets.only(bottom: screenHeight * 0.10),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
@@ -510,7 +473,6 @@ class _ResumeDataState extends State<ResumeData> {
     );
   }
 
-  // Helper function to show snackbar messages
   void _showSnackBar(String message, {bool isError = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -527,7 +489,6 @@ class _ResumeDataState extends State<ResumeData> {
   Future<void> _deleteResume(int resumeId) async {
     final dbHelper = DatabaseHelper.instance;
 
-    // Find and delete all associated saved PDF files
     final savedResumes = await dbHelper.queryAllRows(
       DatabaseHelper.tableSavedResumes,
       where: 'resumeId = ?',
@@ -537,23 +498,18 @@ class _ResumeDataState extends State<ResumeData> {
     for (final resumeFile in savedResumes) {
       try {
         await File(resumeFile['filePath']).delete();
-      } catch (e) {
-        print('Could not delete file ${resumeFile['filePath']}: $e');
-      }
+      } catch (e) {}
     }
 
-    // Delete all data from all tables for this resumeId
     await dbHelper.deleteAllDataForResume(resumeId);
-
     _showSnackBar('Resume data deleted successfully.');
-    _loadResumeIds(); // Refresh the list
+    _loadResumeIds();
   }
 
   Future<void> _regeneratePdfForResume(int resumeId) async {
     final dbHelper = DatabaseHelper.instance;
     final pdfService = PdfService();
 
-    // Find all saved resume files associated with this resumeId
     final savedResumes = await dbHelper.queryAllRows(
       DatabaseHelper.tableSavedResumes,
       where: 'resumeId = ?',
@@ -566,8 +522,7 @@ class _ResumeDataState extends State<ResumeData> {
         try {
           final templateName = resumeInfo['templateName'] as String;
           final filePath = resumeInfo['filePath'] as String;
-          final pdfData =
-              await pdfService.createResume(templateName, resumeId);
+          final pdfData = await pdfService.createResume(templateName, resumeId);
           await File(filePath).writeAsBytes(pdfData);
         } catch (e) {
           _showSnackBar('Failed to update ${resumeInfo['fileName']}: $e',
@@ -589,7 +544,6 @@ class _ResumeDataState extends State<ResumeData> {
     );
 
     if (savedResumes.isNotEmpty && mounted) {
-      // If a resume PDF already exists, show it in the preview page.
       final resumeInfo = savedResumes.first;
       await Navigator.of(context).push(
         MaterialPageRoute(
@@ -603,14 +557,11 @@ class _ResumeDataState extends State<ResumeData> {
         ),
       );
     } else if (mounted) {
-      // If no resume PDF exists, go to the template chooser.
       await Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => ChooseTemplate(resumeId: resumeId)),
       );
     }
 
-    // After returning from the template selection and preview,
-    // check if any PDFs were updated and reflect the changes.
     if (mounted) {
       _regeneratePdfForResume(resumeId);
     }
@@ -641,7 +592,6 @@ class _ResumeDataState extends State<ResumeData> {
       ),
     );
 
-    // If result is true, it means data was saved. Reload the data.
     if (result == true && _selectedResumeId != null && mounted) {
       _loadDataForResume(_selectedResumeId!);
       _regeneratePdfForResume(_selectedResumeId!);

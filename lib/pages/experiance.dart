@@ -114,6 +114,54 @@ class _ExperienceState extends State<Experience> {
     });
   }
 
+    Future<void> _selectYear(BuildContext context, TextEditingController controller, {bool isToYear = false}) async {
+    final currentYear = DateTime.now().year;
+    int? selectedYear;
+
+    DateTime initialDate = DateTime.now();
+    if (controller.text.isNotEmpty && controller.text != 'Present') {
+      final parsedYear = int.tryParse(controller.text);
+      if (parsedYear != null) {
+        initialDate = DateTime(parsedYear);
+      }
+    }
+
+    selectedYear = await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Select Year"),
+          content: Container(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(1950),
+              lastDate: DateTime(currentYear + 10),
+              initialDate: initialDate,
+              selectedDate: initialDate,
+              onChanged: (DateTime dateTime) {
+                Navigator.of(context).pop(dateTime.year);
+              },
+            ),
+          ),
+          actions: <Widget>[
+            if (isToYear)
+              TextButton(
+                child: const Text('Present'),
+                onPressed: () {
+                  Navigator.of(context).pop(-1); // Use -1 to signify "Present"
+                },
+              ),
+          ],
+        );
+      },
+    );
+
+    if (selectedYear != null) {
+      controller.text = selectedYear == -1 ? 'Present' : selectedYear.toString();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,16 +262,21 @@ class _ExperienceState extends State<Experience> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: AppTextField(
-                                        label: "From Year",
-                                        controller: yearController,
-                                        keyboardType: TextInputType.number,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Please enter the starting year';
-                                          }
-                                          return null;
-                                        },
+                                      child: GestureDetector(
+                                        onTap: () => _selectYear(context, yearController),
+                                        child: AbsorbPointer(
+                                          child: AppTextField(
+                                            label: "From Year",
+                                            controller: yearController,
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Please enter the starting year';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -305,16 +358,21 @@ class _ExperienceState extends State<Experience> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: AppTextField(
-                                        label: "To Year",
-                                        controller: endYearController,
-                                        keyboardType: TextInputType.number,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Please enter the ending year';
-                                          }
-                                          return null;
-                                        },
+                                      child: GestureDetector(
+                                        onTap: () => _selectYear(context, endYearController, isToYear: true),
+                                        child: AbsorbPointer(
+                                          child: AppTextField(
+                                            label: "To Year",
+                                            controller: endYearController,
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Please enter the ending year';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 12),

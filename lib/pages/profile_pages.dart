@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:resume_builder/services/database_helper.dart';
 import 'package:resume_builder/services/func.dart';
@@ -207,11 +208,19 @@ class _profilepageState extends State<profilepage> {
                               phoneController,
                               keyboardType: TextInputType.phone,
                               validator: (value) {
-                                if (value == null || value.isEmpty) {
+                                if (value == null || value.trim().isEmpty) {
                                   return 'Please enter your phone number';
+                                }
+                                final phoneRegex = RegExp(r'^\d{10}$');
+                                if (!phoneRegex.hasMatch(value)) {
+                                  return 'Please enter a valid 10-digit phone number';
                                 }
                                 return null;
                               },
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(10),
+                              ],
                             ),
                             const SizedBox(height: 18),
                             GestureDetector(
@@ -389,11 +398,13 @@ class _profilepageState extends State<profilepage> {
     TextEditingController controller, {
     String? Function(String?)? validator,
     required TextInputType keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
       validator: validator,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: ' $label',
         labelStyle: TextStyle(color: Colors.white.withOpacity(0.3)),

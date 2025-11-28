@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:resume_builder/pages/aboutme.dart';
 import 'package:resume_builder/pages/award_page.dart';
 import 'package:resume_builder/pages/choose_template.dart';
@@ -25,12 +26,13 @@ class CreateResume extends StatefulWidget {
   final String? originalFilePath;
   final int initialPage;
   final bool singlePageMode;
-  const CreateResume(
-      {super.key,
-      this.resumeId,
-      this.originalFilePath,
-      this.initialPage = 0,
-      this.singlePageMode = false});
+  const CreateResume({
+    super.key,
+    this.resumeId,
+    this.originalFilePath,
+    this.initialPage = 0,
+    this.singlePageMode = false,
+  });
 
   @override
   State<CreateResume> createState() => _CreateResumeState();
@@ -52,7 +54,6 @@ class _CreateResumeState extends State<CreateResume> {
   }
 
   void _checkFilledPages() async {
-    // Check each page's data and unlock if filled
     final profile = await dbHelper.queryAllRows(
       DatabaseHelper.tableProfile,
       where: 'resumeId = ?',
@@ -107,43 +108,35 @@ class _CreateResumeState extends State<CreateResume> {
       whereArgs: [_resumeId],
       orderBy: 'id',
     );
-    // final skills = await dbHelper.queryAllRows(
-    //   DatabaseHelper.tableSkills,
-    //   where: 'resumeId = ?',
-    //   whereArgs: [_resumeId],
-    // );
 
-    // Update func.index based on filled pages
     if (profile.isNotEmpty) {
-      func.unlockpage(0); // Profile
-      func.unlockpage(1); // Always unlock Awards (optional)
+      func.unlockpage(0);
+      func.unlockpage(1);
     }
     if (about.isNotEmpty) {
-      func.unlockpage(2); // About
-      func.unlockpage(3); // Education
+      func.unlockpage(2);
+      func.unlockpage(3);
     }
     if (education.isNotEmpty) {
-      func.unlockpage(4); // Hobbies
+      func.unlockpage(4);
     }
     if (hobbies.isNotEmpty) {
-      func.unlockpage(5); // Languages
-      func.unlockpage(6); // Always unlock Projects (optional)
+      func.unlockpage(5);
+      func.unlockpage(6);
     }
     if (languages.isNotEmpty) {
-      func.unlockpage(7); // Always unlock References (optional)
-      func.unlockpage(8); // Always unlock Experience (optional)
+      func.unlockpage(7);
+      func.unlockpage(8);
     }
 
-    // These are the required pages that need to be filled
     if (profile.isNotEmpty &&
         about.isNotEmpty &&
         education.isNotEmpty &&
         hobbies.isNotEmpty &&
         languages.isNotEmpty) {
-      func.unlockpage(9); // Skills
+      func.unlockpage(9);
     }
 
-    // Also unlock if any optional pages are filled
     if (awards.isNotEmpty) func.unlockpage(2);
     if (projects.isNotEmpty) func.unlockpage(7);
     if (references.isNotEmpty) func.unlockpage(8);
@@ -192,8 +185,10 @@ class _CreateResumeState extends State<CreateResume> {
     });
   }
 
+  @override
   void dispose() {
     tabScrollController.dispose();
+    pageController.dispose();
     super.dispose();
   }
 
@@ -239,168 +234,207 @@ class _CreateResumeState extends State<CreateResume> {
                 ),
               ),
               const SizedBox(height: 20),
+
               if (!widget.singlePageMode)
-              SingleChildScrollView(
-                controller: tabScrollController,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(tabs.length, (i) {
-                    final selected = currentStep == i;
-                    Widget tabInnerContent = Row(
-                      children: [
-                        Icon(
-                          tabs[i].icon,
-                          color: func.index >= i
-                              ? selected
-                                    ? Colors.white
-                                    : Colors.white70
-                              : Colors.white10,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          tabs[i].label,
-                          style: TextStyle(
-                            color: func.index >= i
-                                ? selected
-                                      ? Colors.white
-                                      : Colors.white70
-                                : Colors.white10,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    );
-                    Widget tabContent = Container(
-                      margin: EdgeInsets.only(left: i == 0 ? 12 : 16),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      child: tabInnerContent,
-                    );
-                    if (selected) {
-                      tabContent = ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                          child: Container(
-                            margin: EdgeInsets.only(left: i == 0 ? 12 : 16),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
+                Container(
+                  height: 72,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                  ), // ✅ Reduced outer padding
+                  child: SingleChildScrollView(
+                    controller: tabScrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: List.generate(tabs.length, (i) {
+                        final selected = currentStep == i;
+
+                       
+                        Widget tabInnerContent = Row(
+                          mainAxisSize: MainAxisSize.min, 
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              tabs[i].icon,
+                              color: func.index >= i
+                                  ? selected
+                                        ? Colors.white
+                                        : Colors.white70
+                                  : Colors.white10,
+                              size: 22, 
                             ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 1.5,
+                            const SizedBox(width: 4), 
+                            Flexible(
+                              child: Text(
+                                tabs[i].label,
+                                style: TextStyle(
+                                  color: func.index >= i
+                                      ? selected
+                                            ? Colors.white
+                                            : Colors.white70
+                                      : Colors.white10,
+                                  fontWeight: selected
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
+                                  fontSize: 18,
+                                  letterSpacing:
+                                      0.2, 
+                                ),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.deepPurple.withOpacity(0.2),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, 12),
+                            ),
+                          ],
+                        );
+
+                        Widget tabContent;
+
+                        if (selected) {
+                          tabContent = Container(
+                            margin: const EdgeInsets.only(
+                              right: 12,
+                            ), 
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                
+                                LiquidGlassLayer(
+                                  settings: LiquidGlassSettings(
+                                    thickness: 28,
+                                    lightAngle: 45,
+                                    lightIntensity: 2.0,
+                                    ambientStrength: 0.9,
+                                    saturation: 1.3,
+                                    visibility: 1.0,
+                                  ),
+                                  child: LiquidGlass(
+                                    shape: LiquidRoundedSuperellipse(
+                                      borderRadius: 18,
+                                    ),
+                                    glassContainsChild: false,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(18),
+                                      child: Container(
+                                        width: 200,
+                                        height: 58, 
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Content layer
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: Container(
+                                    width: 200,
+                                    height: 58,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                    child: tabInnerContent,
+                                  ),
                                 ),
                               ],
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.40),
-                                  Colors.white.withOpacity(0.15),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                            ),
+                          );
+                        } else {
+                          tabContent = Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            width: 200,
+                            height: 58,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 12,
                             ),
                             child: tabInnerContent,
-                          ),
-                        ),
-                      );
-                    }
-                    return GestureDetector(
-                      key: tabKeys[i],
-                      onTap: func.index >= i
-                          ? () {
-                              setState(() => currentStep = i);
-                              animateToTab(i);
-                              if (currentStep == 1) {
-                                pageController.jumpToPage(i);
-                              } else {
-                                pageController.animateToPage(
-                                  i,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              }
-                            }
-                          : null,
-                      child: tabContent,
-                    );
-                  }),
-                ),
-              ),
+                          );
+                        }
 
+                        return GestureDetector(
+                          key: tabKeys[i],
+                          behavior: HitTestBehavior.opaque,
+                          onTap: func.index >= i
+                              ? () {
+                                  setState(() => currentStep = i);
+                                  animateToTab(i);
+                                  pageController.animateToPage(
+                                    i,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                }
+                              : null,
+                          child: SizedBox(
+                            width: 200,
+                            height: 58,
+                            child: tabContent,
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 20),
               Expanded(
                 child: GestureDetector(
-                  onHorizontalDragEnd: widget.singlePageMode ? null : (DragEndDetails details) {
-                    final velocity = details.primaryVelocity ?? 0;
-                    // Negative velocity -> user swiped left (forward)
-                    if (velocity < 0) {
-                      final target = currentStep + 1;
-                      final isAwardsPage =
-                          currentStep == 1; // Index 1 is Awards page
-                      final isProjectsPage =
-                          currentStep == 6; // Index 6 is Projects page
-                      final isReferencesPage =
-                          currentStep == 7; // Index 7 is References page
-                      final isExperiencePage =
-                          currentStep == 8; // Index 8 is Experience page
-                      final isOptionalPage =
-                          isAwardsPage ||
-                          isProjectsPage ||
-                          isReferencesPage ||
-                          isExperiencePage;
+                  onHorizontalDragEnd: widget.singlePageMode
+                      ? null
+                      : (DragEndDetails details) {
+                          final velocity = details.primaryVelocity ?? 0;
+                          if (velocity < 0) {
+                            final target = currentStep + 1;
+                            final isAwardsPage = currentStep == 1;
+                            final isProjectsPage = currentStep == 6;
+                            final isReferencesPage = currentStep == 7;
+                            final isExperiencePage = currentStep == 8;
+                            final isOptionalPage =
+                                isAwardsPage ||
+                                isProjectsPage ||
+                                isReferencesPage ||
+                                isExperiencePage;
 
-                      if (target < tabs.length &&
-                          (func.index >= target || isOptionalPage)) {
-                        pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                        // If skipping optional pages, unlock the next page
-                        if (isOptionalPage && func.index < target) {
-                          func.unlockpage(
-                            currentStep,
-                          ); // This will unlock the next page
-                          func.unlockpage(target); // Also unlock the next page
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Please complete the current section before proceeding',
-                            ),
-                          ),
-                        );
-                      }
-                    }
+                            if (target < tabs.length &&
+                                (func.index >= target || isOptionalPage)) {
+                              pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                              if (isOptionalPage && func.index < target) {
+                                func.unlockpage(currentStep);
+                                func.unlockpage(target);
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Please complete the current section before proceeding',
+                                  ),
+                                ),
+                              );
+                            }
+                          }
 
-                    // Positive velocity -> user swiped right (back)
-                    if (velocity > 0) {
-                      if (currentStep > 0) {
-                        pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    }
-                  },
+                          if (velocity > 0) {
+                            if (currentStep > 0) {
+                              pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          }
+                        },
                   child: PageView.builder(
-                    // Disable the default scroll physics so our GestureDetector can
-                    // control navigation and enforce validation rules.
                     physics: const NeverScrollableScrollPhysics(),
                     controller: pageController,
                     onPageChanged: (index) {
@@ -416,11 +450,12 @@ class _CreateResumeState extends State<CreateResume> {
                             singlePageMode: widget.singlePageMode,
                             onNext: () {
                               if (widget.singlePageMode) {
-                                Navigator.of(context).pop(true); // Return true to indicate changes
+                                Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -433,8 +468,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -447,8 +483,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -461,8 +498,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -475,8 +513,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -489,8 +528,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -503,8 +543,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -517,8 +558,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -531,8 +573,9 @@ class _CreateResumeState extends State<CreateResume> {
                                 Navigator.of(context).pop(true);
                               } else {
                                 pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut);
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
                             },
                           );
@@ -545,10 +588,12 @@ class _CreateResumeState extends State<CreateResume> {
                               if (widget.singlePageMode) {
                                 Navigator.of(context).pop(true);
                               } else {
-                                // This is the final step in creation, so navigate to choose a template.
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => ChooseTemplate(resumeId: _resumeId),
-                                ));
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ChooseTemplate(resumeId: _resumeId),
+                                  ),
+                                );
                                 Navigator.of(context).pop(true);
                               }
                             },
