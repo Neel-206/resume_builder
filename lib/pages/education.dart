@@ -530,6 +530,7 @@ class _EducationState extends State<Education> {
                                     margin: const EdgeInsets.only(bottom: 12),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(18),
+                                      
                                       gradient: LinearGradient(
                                         colors: [
                                           Colors.white.withOpacity(0.12),
@@ -540,7 +541,7 @@ class _EducationState extends State<Education> {
                                       ),
                                       border: Border.all(
                                         color: Colors.white.withOpacity(0.18),
-                                        width: 1.2,
+                                        width: 2,
                                       ),
                                     
                                     ),
@@ -548,8 +549,8 @@ class _EducationState extends State<Education> {
                                       borderRadius: BorderRadius.circular(18),
                                       child: BackdropFilter(
                                         filter: ImageFilter.blur(
-                                          sigmaX: 18,
-                                          sigmaY: 18,
+                                          sigmaX: 20,
+                                          sigmaY: 20,
                                         ),
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(
