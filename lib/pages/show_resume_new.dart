@@ -553,13 +553,13 @@ class _ShowResumeState extends State<ShowResume>
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-      ),
+      // decoration: BoxDecoration(
+      //   color: Colors.white.withOpacity(0.1),
+      //   borderRadius: const BorderRadius.only(
+      //     bottomLeft: Radius.circular(28),
+      //     bottomRight: Radius.circular(28),
+      //   ),
+      // ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

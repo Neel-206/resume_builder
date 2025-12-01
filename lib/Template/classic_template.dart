@@ -269,114 +269,118 @@ class ClassicTemplate {
     }
 
     sidebarY += 10;
-    checkSidebarPageBreak(50, isSectionHeader: true);
-    page = getPageAtIndex(sidebarPageIndex);
-    graphics = page.graphics;
-    graphics.drawString(
-      'SKILLS',
-      sectionTitleFont,
-      bounds: Rect.fromLTWH(sidebarX, sidebarY, sidebarWidth, 20),
-      format: PdfStringFormat(alignment: PdfTextAlignment.left),
-      brush: PdfBrushes.black,
-    );
-    sidebarY += 22;
-
-    final double skillNameWidth = sidebarWidth * 0.6;
-    final double proficiencyX = sidebarX + skillNameWidth;
-    final double proficiencyWidth = sidebarWidth - skillNameWidth;
-
-    for (final skill in skillsList) {
-      checkSidebarPageBreak(20);
+    if (skillsList.isNotEmpty) {
+      checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
       graphics.drawString(
-        skill.name,
-        sidebarTextFont,
-        bounds: Rect.fromLTWH(sidebarX, sidebarY, skillNameWidth, 14),
+        'SKILLS',
+        sectionTitleFont,
+        bounds: Rect.fromLTWH(sidebarX, sidebarY, sidebarWidth, 20),
         format: PdfStringFormat(alignment: PdfTextAlignment.left),
         brush: PdfBrushes.black,
       );
-      graphics.drawString(
-        skill.proficiency,
-        sidebarTextFont,
-        bounds: Rect.fromLTWH(proficiencyX, sidebarY, proficiencyWidth, 14),
-        format: PdfStringFormat(alignment: PdfTextAlignment.right),
-        brush: PdfBrushes.darkGray,
-      );
-      sidebarY += 14;
+      sidebarY += 22;
+
+      final double skillNameWidth = sidebarWidth * 0.6;
+      final double proficiencyX = sidebarX + skillNameWidth;
+      final double proficiencyWidth = sidebarWidth - skillNameWidth;
+
+      for (final skill in skillsList) {
+        checkSidebarPageBreak(20);
+        page = getPageAtIndex(sidebarPageIndex);
+        graphics = page.graphics;
+        graphics.drawString(
+          skill.name,
+          sidebarTextFont,
+          bounds: Rect.fromLTWH(sidebarX, sidebarY, skillNameWidth, 14),
+          format: PdfStringFormat(alignment: PdfTextAlignment.left),
+          brush: PdfBrushes.black,
+        );
+        graphics.drawString(
+          skill.proficiency,
+          sidebarTextFont,
+          bounds: Rect.fromLTWH(proficiencyX, sidebarY, proficiencyWidth, 14),
+          format: PdfStringFormat(alignment: PdfTextAlignment.right),
+          brush: PdfBrushes.darkGray,
+        );
+        sidebarY += 14;
+      }
     }
 
     sidebarY += 20;
-    checkSidebarPageBreak(50, isSectionHeader: true);
-    page = getPageAtIndex(sidebarPageIndex);
-    graphics = page.graphics;
-    graphics.drawString(
-      'CERTIFICATIONS',
-      sectionTitleFont,
-      bounds: Rect.fromLTWH(sidebarX, sidebarY, sidebarWidth, 20),
-      format: PdfStringFormat(alignment: PdfTextAlignment.left),
-      brush: PdfBrushes.black,
-    );
-    sidebarY += 22;
-
     if (awardsList.isNotEmpty) {
-      for (final cert in awardsList) {
-        checkSidebarPageBreak(80);
-        page = getPageAtIndex(sidebarPageIndex);
-        graphics = page.graphics;
-        sidebarY = _drawWrappedText(
-          graphics: graphics,
-          text: cert.title ?? '',
-          font: sidebarTextFont,
-          x: sidebarX,
-          y: sidebarY,
-          maxWidth: sidebarWidth,
-          lineHeight: 13,
-          alignment: PdfTextAlignment.left,
-        );
-        sidebarY = _drawWrappedText(
-          graphics: graphics,
-          text: cert.issuer ?? '',
-          font: sidebarTextFont,
-          x: sidebarX,
-          y: sidebarY,
-          maxWidth: sidebarWidth,
-          lineHeight: 13,
-          alignment: PdfTextAlignment.left,
-        );
-        sidebarY = _drawWrappedText(
-          graphics: graphics,
-          text: '${cert.year ?? 'YYYY'} - ${cert.month ?? 'MM'}',
-          font: sidebarTextFont,
-          x: sidebarX,
-          y: sidebarY,
-          maxWidth: sidebarWidth,
-          lineHeight: 13,
-          alignment: PdfTextAlignment.left,
-        );
-        sidebarY = _drawWrappedText(
-          graphics: graphics,
-          text: cert.description ?? '',
-          font: sidebarTextFont,
-          x: sidebarX,
-          y: sidebarY,
-          maxWidth: sidebarWidth,
-          lineHeight: 13,
-          alignment: PdfTextAlignment.left,
-        );
-        sidebarY += 15;
-      }
-    } else {
-      sidebarY = _drawWrappedText(
-        graphics: graphics,
-        text: 'No Certifications Listed',
-        font: sidebarTextFont,
-        x: sidebarX,
-        y: sidebarY,
-        maxWidth: sidebarWidth,
-        lineHeight: 13,
-        alignment: PdfTextAlignment.left,
+      checkSidebarPageBreak(50, isSectionHeader: true);
+      page = getPageAtIndex(sidebarPageIndex);
+      graphics = page.graphics;
+      graphics.drawString(
+        'CERTIFICATIONS',
+        sectionTitleFont,
+        bounds: Rect.fromLTWH(sidebarX, sidebarY, sidebarWidth, 20),
+        format: PdfStringFormat(alignment: PdfTextAlignment.left),
+        brush: PdfBrushes.black,
       );
+      sidebarY += 22;
+
+      if (awardsList.isNotEmpty) {
+        for (final cert in awardsList) {
+          checkSidebarPageBreak(80);
+          page = getPageAtIndex(sidebarPageIndex);
+          graphics = page.graphics;
+          sidebarY = _drawWrappedText(
+            graphics: graphics,
+            text: cert.title ?? '',
+            font: sidebarTextFont,
+            x: sidebarX,
+            y: sidebarY,
+            maxWidth: sidebarWidth,
+            lineHeight: 13,
+            alignment: PdfTextAlignment.left,
+          );
+          sidebarY = _drawWrappedText(
+            graphics: graphics,
+            text: cert.issuer ?? '',
+            font: sidebarTextFont,
+            x: sidebarX,
+            y: sidebarY,
+            maxWidth: sidebarWidth,
+            lineHeight: 13,
+            alignment: PdfTextAlignment.left,
+          );
+          sidebarY = _drawWrappedText(
+            graphics: graphics,
+            text: '${cert.year ?? 'YYYY'} - ${cert.month ?? 'MM'}',
+            font: sidebarTextFont,
+            x: sidebarX,
+            y: sidebarY,
+            maxWidth: sidebarWidth,
+            lineHeight: 13,
+            alignment: PdfTextAlignment.left,
+          );
+          sidebarY = _drawWrappedText(
+            graphics: graphics,
+            text: cert.description ?? '',
+            font: sidebarTextFont,
+            x: sidebarX,
+            y: sidebarY,
+            maxWidth: sidebarWidth,
+            lineHeight: 13,
+            alignment: PdfTextAlignment.left,
+          );
+          sidebarY += 15;
+        }
+      } else {
+        sidebarY = _drawWrappedText(
+          graphics: graphics,
+          text: 'No Certifications Listed',
+          font: sidebarTextFont,
+          x: sidebarX,
+          y: sidebarY,
+          maxWidth: sidebarWidth,
+          lineHeight: 13,
+          alignment: PdfTextAlignment.left,
+        );
+      }
     }
 
     // --- MAIN CONTENT COLUMN ---
@@ -529,52 +533,54 @@ class ClassicTemplate {
       }
     }
 
-    checkMainPageBreak(50, isSectionHeader: true);
-    page = getPageAtIndex(mainPageIndex);
-    graphics = page.graphics;
-    graphics.drawString(
-      'LANGUAGES',
-      sectionTitleFont,
-      bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
-      brush: PdfBrushes.black,
-    );
-    mainY += 22;
-
     if (languagesList.isNotEmpty) {
-      for (final lang in languagesList) {
-        checkMainPageBreak(20);
-        page = getPageAtIndex(mainPageIndex);
-        graphics = page.graphics;
-        String abilities = '';
-        if (lang.canRead) abilities += 'Read,';
-        if (lang.canWrite) abilities += 'Write,';
-        if (lang.canSpeak) abilities += 'Speak';
+      checkMainPageBreak(50, isSectionHeader: true);
+      page = getPageAtIndex(mainPageIndex);
+      graphics = page.graphics;
+      graphics.drawString(
+        'LANGUAGES',
+        sectionTitleFont,
+        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
+        brush: PdfBrushes.black,
+      );
+      mainY += 22;
 
-        mainY = _drawWrappedText(
-          graphics: graphics,
-          text: '${lang.name} (${abilities.trim()})',
-          font: bodyFont,
-          x: mainContentX,
-          y: mainY,
-          maxWidth: mainContentWidth,
-          lineHeight: 13,
-        );
+      if (languagesList.isNotEmpty) {
+        for (final lang in languagesList) {
+          checkMainPageBreak(20);
+          page = getPageAtIndex(mainPageIndex);
+          graphics = page.graphics;
+          String abilities = '';
+          if (lang.canRead) abilities += 'Read,';
+          if (lang.canWrite) abilities += 'Write,';
+          if (lang.canSpeak) abilities += 'Speak';
+
+          mainY = _drawWrappedText(
+            graphics: graphics,
+            text: '${lang.name} (${abilities.trim()})',
+            font: bodyFont,
+            x: mainContentX,
+            y: mainY,
+            maxWidth: mainContentWidth,
+            lineHeight: 13,
+          );
+        }
       }
     }
 
     mainY += 20;
-    checkMainPageBreak(50, isSectionHeader: true);
-    page = getPageAtIndex(mainPageIndex);
-    graphics = page.graphics;
-    graphics.drawString(
-      'HOBBIES',
-      sectionTitleFont,
-      bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
-      brush: PdfBrushes.black,
-    );
-    mainY += 22;
-
     if (hobbiesList.isNotEmpty) {
+      checkMainPageBreak(50, isSectionHeader: true);
+      page = getPageAtIndex(mainPageIndex);
+      graphics = page.graphics;
+      graphics.drawString(
+        'HOBBIES',
+        sectionTitleFont,
+        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
+        brush: PdfBrushes.black,
+      );
+      mainY += 22;
+
       for (final hobby in hobbiesList) {
         checkMainPageBreak(20);
         page = getPageAtIndex(mainPageIndex);

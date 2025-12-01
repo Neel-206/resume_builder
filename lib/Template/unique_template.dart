@@ -245,16 +245,16 @@ class UniqueTemplate {
       sidebarY += 13;
     }
     sidebarY += 10;
-
-    graphics.drawLine(
-      PdfPen(PdfColor(169, 221, 235), width: 1.5),
-      Offset(sidebarX + 15, sidebarY),
-      Offset(sidebarX + sidebarWidth - 15, sidebarY),
-    );
-    sidebarY += 10;
-
-    // -- Languages Section --
     if (languagesList.isNotEmpty) {
+      graphics.drawLine(
+        PdfPen(PdfColor(169, 221, 235), width: 1.5),
+        Offset(sidebarX + 15, sidebarY),
+        Offset(sidebarX + sidebarWidth - 15, sidebarY),
+      );
+      sidebarY += 10;
+
+      // -- Languages Section --
+
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -292,16 +292,16 @@ class UniqueTemplate {
       }
       sidebarY += 10;
     }
-
-    graphics.drawLine(
-      PdfPen(PdfColor(169, 221, 235), width: 1.5),
-      Offset(sidebarX + 15, sidebarY),
-      Offset(sidebarX + sidebarWidth - 15, sidebarY),
-    );
-    sidebarY += 10;
-
-    // -- Skills Section --
     if (skillsList.isNotEmpty) {
+      graphics.drawLine(
+        PdfPen(PdfColor(169, 221, 235), width: 1.5),
+        Offset(sidebarX + 15, sidebarY),
+        Offset(sidebarX + sidebarWidth - 15, sidebarY),
+      );
+      sidebarY += 10;
+
+      // -- Skills Section --
+
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -344,16 +344,16 @@ class UniqueTemplate {
       }
       sidebarY += 10;
     }
-
-    graphics.drawLine(
-      PdfPen(PdfColor(169, 221, 235), width: 1.5),
-      Offset(sidebarX + 15, sidebarY),
-      Offset(sidebarX + sidebarWidth - 15, sidebarY),
-    );
-    sidebarY += 10;
-
-    // -- Hobbies Section --
     if (hobbiesList.isNotEmpty) {
+      graphics.drawLine(
+        PdfPen(PdfColor(169, 221, 235), width: 1.5),
+        Offset(sidebarX + 15, sidebarY),
+        Offset(sidebarX + sidebarWidth - 15, sidebarY),
+      );
+      sidebarY += 10;
+
+      // -- Hobbies Section --
+
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -387,16 +387,15 @@ class UniqueTemplate {
       }
       sidebarY += 5;
     }
-
-    graphics.drawLine(
-      PdfPen(PdfColor(169, 221, 235), width: 1.5),
-      Offset(sidebarX + 15, sidebarY),
-      Offset(sidebarX + sidebarWidth - 15, sidebarY),
-    );
-    sidebarY += 10;
-
-    //--- REFERENCES SECTION ---
     if (referencesList.isNotEmpty) {
+      graphics.drawLine(
+        PdfPen(PdfColor(169, 221, 235), width: 1.5),
+        Offset(sidebarX + 15, sidebarY),
+        Offset(sidebarX + sidebarWidth - 15, sidebarY),
+      );
+      sidebarY += 10;
+
+      //--- REFERENCES SECTION ---
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -615,16 +614,14 @@ class UniqueTemplate {
           15;
     }
 
-
     // -- Awards Section --
     if (awardsList.isNotEmpty) {
-
-    graphics.drawLine(
-      PdfPen(PdfColor(0, 0, 0), width: 1.5),
-      Offset(mainContentX, mainY),
-      Offset(mainContentX + mainContentWidth, mainY),
-    );
-    mainY += 5;
+      graphics.drawLine(
+        PdfPen(PdfColor(0, 0, 0), width: 1.5),
+        Offset(mainContentX, mainY),
+        Offset(mainContentX + mainContentWidth, mainY),
+      );
+      mainY += 5;
       checkMainPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(mainPageIndex);
       graphics = page.graphics;

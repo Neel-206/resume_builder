@@ -19,8 +19,8 @@ class ResumeData extends StatefulWidget {
 
 class _ResumeDataState extends State<ResumeData> {
   List<int> _resumeIds = [];
-  int? _selectedResumeId;
-  Map<String, List<Map<String, dynamic>>> _selectedResumeData = {};
+  final Set<int> _expandedResumeIds = {};
+  final Map<int, Map<String, List<Map<String, dynamic>>>> _resumesData = {};
 
   @override
   void initState() {
@@ -86,7 +86,7 @@ class _ResumeDataState extends State<ResumeData> {
           ),
         ),
       ),
-      
+
       floatingActionButton: GlassContainer(
         width: 70,
         height: 70,
@@ -116,11 +116,7 @@ class _ResumeDataState extends State<ResumeData> {
             splashColor: Colors.white.withOpacity(0.4),
             highlightColor: Colors.white.withOpacity(0.2),
             child: const Center(
-              child: Icon(
-                Icons.add_rounded,
-                color: Colors.white,
-                size: 30,
-              ),
+              child: Icon(Icons.add_rounded, color: Colors.white, size: 30),
             ),
           ),
         ),
@@ -154,55 +150,68 @@ class _ResumeDataState extends State<ResumeData> {
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Create New Resume'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: firstNameController,
-                  decoration: const InputDecoration(labelText: 'First Name'),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a first name.';
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
+          child: AlertDialog(
+            backgroundColor: Colors.white.withOpacity(
+              0.3,
+            ), // Semi-transparent background
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+              side: BorderSide(
+                color: Colors.white.withOpacity(0.5),
+                width: 1.0,
+              ), // Optional border
+            ),
+            title: const Text('Create New Resume',style: TextStyle(color: Colors.white),),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: firstNameController,
+                    decoration: InputDecoration(labelText: 'First Name',labelStyle: TextStyle(color: Colors.white)),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a first name.';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: lastNameController,
+                    decoration: InputDecoration(labelText: 'Last Name',labelStyle: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (formKey.currentState!.validate()) {
+                    Navigator.of(dialogContext).pop();
+                    final newResumeId = DateTime.now().millisecondsSinceEpoch;
+                    final dbHelper = DatabaseHelper.instance;
+                    await dbHelper.insert(DatabaseHelper.tableProfile, {
+                      'resumeId': newResumeId,
+                      'firstName': firstNameController.text.trim(),
+                      'lastName': lastNameController.text.trim(),
+                    });
+                    if (mounted) {
+                      _loadResumeIds();
+                      _showSnackBar('New resume created!');
                     }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: lastNameController,
-                  decoration: const InputDecoration(labelText: 'Last Name'),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  Navigator.of(dialogContext).pop();
-                  final newResumeId = DateTime.now().millisecondsSinceEpoch;
-                  final dbHelper = DatabaseHelper.instance;
-                  await dbHelper.insert(DatabaseHelper.tableProfile, {
-                    'resumeId': newResumeId,
-                    'firstName': firstNameController.text.trim(),
-                    'lastName': lastNameController.text.trim(),
-                  });
-                  if (mounted) {
-                    _loadResumeIds();
-                    _showSnackBar('New resume created!');
                   }
-                }
-              },
-              child: const Text('Create'),
-            ),
-          ],
+                },
+                child: const Text('Create'),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -210,8 +219,10 @@ class _ResumeDataState extends State<ResumeData> {
 
   void _loadResumeIds() async {
     final dbHelper = DatabaseHelper.instance;
-    final profiles =
-        await dbHelper.queryAllRows(DatabaseHelper.tableProfile, orderBy: 'id');
+    final profiles = await dbHelper.queryAllRows(
+      DatabaseHelper.tableProfile,
+      orderBy: 'id',
+    );
     final ids = profiles.map((p) => p['resumeId'] as int).toSet().toList();
     ids.sort((a, b) => b.compareTo(a));
     if (mounted) {
@@ -291,7 +302,7 @@ class _ResumeDataState extends State<ResumeData> {
 
     if (mounted) {
       setState(() {
-        _selectedResumeData = data;
+        _resumesData[resumeId] = data;
       });
     }
   }
@@ -335,71 +346,120 @@ class _ResumeDataState extends State<ResumeData> {
               }
             }
 
-            final isSelected = _selectedResumeId == resumeId;
+            final isExpanded = _expandedResumeIds.contains(resumeId);
 
             return Padding(
-              padding: EdgeInsets.only(bottom: screenHeight * 0.10),
+              padding: EdgeInsets.only(
+                bottom: index == _resumeIds.length - 1
+                    ? screenHeight * 0.1
+                    : screenHeight * 0.01,
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: ExpansionTile(
-                  key: PageStorageKey('resume_$resumeId'),
-                  onExpansionChanged: (expanded) {
-                    setState(() {
-                      if (expanded) {
-                        _selectedResumeId = resumeId;
-                        _loadDataForResume(resumeId);
-                      } else {
-                        _selectedResumeId = null;
-                        _selectedResumeData.clear();
-                      }
-                    });
-                  },
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          titleText,
-                          style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
-                              color: Colors.white,
-                              fontSize: screenWidth * 0.045,
-                              fontWeight: FontWeight.w500,
+                child: Theme(
+                  data: Theme.of(
+                    context,
+                  ).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+
+                    key: PageStorageKey('resume_$resumeId'),
+                    initiallyExpanded: isExpanded,
+                    onExpansionChanged: (expanded) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() {
+                          if (expanded) {
+                            _expandedResumeIds.add(resumeId);
+                            _loadDataForResume(resumeId);
+                          } else {
+                            _expandedResumeIds.remove(resumeId);
+                          }
+                        });
+                      });
+                    },
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            titleText,
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.045,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.style_outlined,
-                            color: Colors.white.withOpacity(0.8)),
-                        onPressed: () => _changeTemplate(resumeId),
-                        tooltip: 'Change Template',
-                        splashRadius: 20,
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete_outline_rounded,
-                            color: Colors.white.withOpacity(0.8)),
-                        onPressed: () => _showDeleteDialog(resumeId, titleText),
-                        tooltip: 'Delete Resume Data',
-                        splashRadius: 20,
-                      ),
-                    ],
+                        FutureBuilder<bool>(
+                          future: _isResumeComplete(resumeId),
+                          builder: (context, validationSnapshot) {
+                            final bool isComplete =
+                                validationSnapshot.data ?? false;
+                            return IconButton(
+                              icon: Icon(
+                                Icons.style_outlined,
+                                color: isComplete
+                                    ? Colors.white.withOpacity(0.8)
+                                    : Colors.white.withOpacity(0.3),
+                              ),
+                              onPressed: isComplete
+                                  ? () => _changeTemplate(resumeId)
+                                  : () {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Please fill all required fields (Profile, About, Education, Skills, Languages) to change template.',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              tooltip: isComplete
+                                  ? 'Change Template'
+                                  : 'Fill required fields to change template',
+                              splashRadius: 20,
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                          onPressed: () =>
+                              _showDeleteDialog(resumeId, titleText),
+                          tooltip: 'Delete Resume Data',
+                          splashRadius: 20,
+                        ),
+                      ],
+                    ),
+                    iconColor: Colors.white,
+                    collapsedIconColor: Colors.white,
+                    tilePadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
+                    children: isExpanded && _resumesData.containsKey(resumeId)
+                        ? _resumesData[resumeId]!.entries.map((entry) {
+                            return _buildSectionExpansionTile(
+                              entry.key,
+                              entry.value,
+                              screenWidth,
+                            );
+                          }).toList()
+                        : [],
                   ),
-                  iconColor: Colors.white,
-                  collapsedIconColor: Colors.white,
-                  tilePadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  children: isSelected
-                      ? _selectedResumeData.entries.map((entry) {
-                          return _buildSectionExpansionTile(
-                            entry.key,
-                            entry.value,
-                            screenWidth,
-                          );
-                        }).toList()
-                      : [],
                 ),
               ),
             );
@@ -407,6 +467,49 @@ class _ResumeDataState extends State<ResumeData> {
         );
       },
     );
+  }
+
+  Future<bool> _isResumeComplete(int resumeId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final where = 'resumeId = ?';
+    final whereArgs = [resumeId];
+
+    final profileData = await dbHelper.queryAllRows(
+      DatabaseHelper.tableProfile,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    if (profileData.isEmpty) return false;
+
+    final aboutData = await dbHelper.queryAllRows(
+      DatabaseHelper.tableAbout,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    if (aboutData.isEmpty) return false;
+
+    final educationData = await dbHelper.queryAllRows(
+      DatabaseHelper.tableEducation,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    if (educationData.isEmpty) return false;
+
+    final skillsData = await dbHelper.queryAllRows(
+      DatabaseHelper.tableSkills,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    if (skillsData.isEmpty) return false;
+
+    final languagesData = await dbHelper.queryAllRows(
+      DatabaseHelper.tableLanguages,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    if (languagesData.isEmpty) return false;
+
+    return true;
   }
 
   void _showDeleteDialog(int resumeId, String resumeTitle) {
@@ -525,8 +628,10 @@ class _ResumeDataState extends State<ResumeData> {
           final pdfData = await pdfService.createResume(templateName, resumeId);
           await File(filePath).writeAsBytes(pdfData);
         } catch (e) {
-          _showSnackBar('Failed to update ${resumeInfo['fileName']}: $e',
-              isError: true);
+          _showSnackBar(
+            'Failed to update ${resumeInfo['fileName']}: $e',
+            isError: true,
+          );
         }
       }
       _showSnackBar('Saved resume(s) updated successfully!');
@@ -534,6 +639,7 @@ class _ResumeDataState extends State<ResumeData> {
   }
 
   void _changeTemplate(int resumeId) async {
+    bool changesMade = false;
     final dbHelper = DatabaseHelper.instance;
     final savedResumes = await dbHelper.queryAllRows(
       DatabaseHelper.tableSavedResumes,
@@ -545,7 +651,7 @@ class _ResumeDataState extends State<ResumeData> {
 
     if (savedResumes.isNotEmpty && mounted) {
       final resumeInfo = savedResumes.first;
-      await Navigator.of(context).push(
+      final result = await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => PdfPreviewPage(
             path: resumeInfo['filePath'],
@@ -556,13 +662,21 @@ class _ResumeDataState extends State<ResumeData> {
           ),
         ),
       );
+      if (result == true) {
+        changesMade = true;
+      }
     } else if (mounted) {
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => ChooseTemplate(resumeId: resumeId)),
+      final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ChooseTemplate(resumeId: resumeId),
+        ),
       );
+      if (result == true) {
+        changesMade = true;
+      }
     }
 
-    if (mounted) {
+    if (mounted && changesMade) {
       _regeneratePdfForResume(resumeId);
     }
   }
@@ -586,15 +700,16 @@ class _ResumeDataState extends State<ResumeData> {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => CreateResume(
-            resumeId: _selectedResumeId,
-            initialPage: pageIndex,
-            singlePageMode: true),
+          resumeId: _expandedResumeIds.first,
+          initialPage: pageIndex,
+          singlePageMode: true,
+        ),
       ),
     );
 
-    if (result == true && _selectedResumeId != null && mounted) {
-      _loadDataForResume(_selectedResumeId!);
-      _regeneratePdfForResume(_selectedResumeId!);
+    if (result == true && _expandedResumeIds.isNotEmpty && mounted) {
+      _loadDataForResume(_expandedResumeIds.first);
+      _regeneratePdfForResume(_expandedResumeIds.first);
     }
   }
 
@@ -628,11 +743,15 @@ class _ResumeDataState extends State<ResumeData> {
               subtitle: Text(
                 'Fresher',
                 style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.9), fontSize: 14),
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 14,
+                ),
               ),
               trailing: IconButton(
-                icon: Icon(Icons.edit_rounded,
-                    color: Colors.white.withOpacity(0.8)),
+                icon: Icon(
+                  Icons.edit_rounded,
+                  color: Colors.white.withOpacity(0.8),
+                ),
                 onPressed: () => _navigateToEdit(title),
                 splashRadius: 20,
               ),
@@ -663,11 +782,15 @@ class _ResumeDataState extends State<ResumeData> {
             subtitle: Text(
               'No data available',
               style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.7), fontSize: 12),
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 12,
+              ),
             ),
             trailing: IconButton(
-              icon: Icon(Icons.edit_rounded,
-                  color: Colors.white.withOpacity(0.8)),
+              icon: Icon(
+                Icons.edit_rounded,
+                color: Colors.white.withOpacity(0.8),
+              ),
               onPressed: () => _navigateToEdit(title),
               splashRadius: 20,
             ),
@@ -684,7 +807,7 @@ class _ResumeDataState extends State<ResumeData> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: ExpansionTile(
-          key: PageStorageKey('${_selectedResumeId}_$title'),
+          key: PageStorageKey('${_expandedResumeIds.first}_$title'),
           tilePadding: EdgeInsets.only(left: 16, right: 8),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
