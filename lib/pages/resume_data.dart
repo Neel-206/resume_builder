@@ -124,6 +124,48 @@ class _ResumeDataState extends State<ResumeData> {
     );
   }
 
+  Widget glassTextField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    bool isRequired = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.35), width: 1),
+      ),
+      child: TextFormField(
+        controller: controller,
+        style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+        cursorColor: Colors.white,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.8)),
+          hintText: hint,
+          hintStyle: GoogleFonts.poppins(
+            color: Colors.white.withOpacity(0.5),
+            fontSize: 13,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 10,
+          ),
+        ),
+        validator: isRequired
+            ? (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter $label.';
+                }
+                return null;
+              }
+            : null,
+      ),
+    );
+  }
+
   Widget _buildSubtitle(double screenWidth) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
@@ -149,68 +191,143 @@ class _ResumeDataState extends State<ResumeData> {
 
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.4),
       builder: (dialogContext) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
-          child: AlertDialog(
-            backgroundColor: Colors.white.withOpacity(
-              0.3,
-            ), // Semi-transparent background
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-              side: BorderSide(
-                color: Colors.white.withOpacity(0.5),
-                width: 1.0,
-              ), // Optional border
+        final screenWidth = MediaQuery.of(dialogContext).size.width;
+
+        return Center(
+          child: GlassContainer(
+            width: screenWidth * 0.9,
+            height: null,
+            borderRadius: BorderRadius.circular(24),
+            blur: 18,
+            linearGradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.18),
+                Colors.white.withOpacity(0.05),
+              ],
             ),
-            title: const Text('Create New Resume',style: TextStyle(color: Colors.white),),
-            content: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: firstNameController,
-                    decoration: InputDecoration(labelText: 'First Name',labelStyle: TextStyle(color: Colors.white)),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a first name.';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: lastNameController,
-                    decoration: InputDecoration(labelText: 'Last Name',labelStyle: TextStyle(color: Colors.white)),
-                  ),
-                ],
+            borderGradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.7),
+                Colors.white.withOpacity(0.2),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+              child: Material(
+                color: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Top handle + icon row
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+                    Text(
+                      'Give a name to quickly find and update this resume later.',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: screenWidth * 0.035,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+                    Form(
+                      key: formKey,
+                      child: Column(
+                        children: [
+                          glassTextField(
+                            controller: firstNameController,
+                            label: 'First Name',
+                            hint: 'e.g. kevin',
+                            isRequired: true,
+                          ),
+                          const SizedBox(height: 12),
+                          glassTextField(
+                            controller: lastNameController,
+                            label: 'Last Name',
+                            hint: 'e.g. peterson',
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white.withOpacity(0.9),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (formKey.currentState!.validate()) {
+                                Navigator.of(dialogContext).pop();
+                                final newResumeId =
+                                    DateTime.now().millisecondsSinceEpoch;
+                                final dbHelper = DatabaseHelper.instance;
+                                await dbHelper.insert(
+                                  DatabaseHelper.tableProfile,
+                                  {
+                                    'resumeId': newResumeId,
+                                    'firstName': firstNameController.text
+                                        .trim(),
+                                    'lastName': lastNameController.text.trim(),
+                                  },
+                                );
+                                if (mounted) {
+                                  _loadResumeIds();
+                                  _showSnackBar('New resume created!');
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xff5f56ee),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(
+                              'Create',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (formKey.currentState!.validate()) {
-                    Navigator.of(dialogContext).pop();
-                    final newResumeId = DateTime.now().millisecondsSinceEpoch;
-                    final dbHelper = DatabaseHelper.instance;
-                    await dbHelper.insert(DatabaseHelper.tableProfile, {
-                      'resumeId': newResumeId,
-                      'firstName': firstNameController.text.trim(),
-                      'lastName': lastNameController.text.trim(),
-                    });
-                    if (mounted) {
-                      _loadResumeIds();
-                      _showSnackBar('New resume created!');
-                    }
-                  }
-                },
-                child: const Text('Create'),
-              ),
-            ],
           ),
         );
       },
@@ -652,14 +769,26 @@ class _ResumeDataState extends State<ResumeData> {
     if (savedResumes.isNotEmpty && mounted) {
       final resumeInfo = savedResumes.first;
       final result = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => PdfPreviewPage(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => PdfPreviewPage(
             path: resumeInfo['filePath'],
             resumeId: resumeId,
             templateName: resumeInfo['templateName'],
             originalFilePath: resumeInfo['filePath'],
             isViewingOnly: false,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.easeInOut));
+            final fadeTween = Tween(begin: 0.0, end: 1.0);
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: FadeTransition(opacity: animation.drive(fadeTween), child: child),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
         ),
       );
       if (result == true) {
@@ -667,8 +796,21 @@ class _ResumeDataState extends State<ResumeData> {
       }
     } else if (mounted) {
       final result = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ChooseTemplate(resumeId: resumeId),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ChooseTemplate(resumeId: resumeId),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.easeInOut));
+            final fadeTween = Tween(begin: 0.0, end: 1.0);
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: FadeTransition(opacity: animation.drive(fadeTween), child: child),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
         ),
       );
       if (result == true) {
@@ -698,12 +840,24 @@ class _ResumeDataState extends State<ResumeData> {
     final pageIndex = sectionPageIndex[sectionTitle] ?? 0;
 
     final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => CreateResume(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => CreateResume(
           resumeId: _expandedResumeIds.first,
           initialPage: pageIndex,
           singlePageMode: true,
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.easeInOut));
+          final fadeTween = Tween(begin: 0.0, end: 1.0);
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: FadeTransition(opacity: animation.drive(fadeTween), child: child),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 500),
       ),
     );
 

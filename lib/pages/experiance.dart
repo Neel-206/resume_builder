@@ -9,7 +9,12 @@ class Experience extends StatefulWidget {
   final VoidCallback onNext;
   final int resumeId;
   final bool singlePageMode;
-  const Experience({super.key, required this.onNext, required this.resumeId, this.singlePageMode = false});
+  const Experience({
+    super.key,
+    required this.onNext,
+    required this.resumeId,
+    this.singlePageMode = false,
+  });
 
   @override
   State<Experience> createState() => _ExperienceState();
@@ -41,7 +46,8 @@ class _ExperienceState extends State<Experience> {
   ];
   final form_Key = GlobalKey<FormState>();
   final int pageindex = 8;
-
+  bool isDropdownOpen = false;
+  bool isEndDropdownOpen = false;
   @override
   void initState() {
     super.initState();
@@ -114,7 +120,11 @@ class _ExperienceState extends State<Experience> {
     });
   }
 
-    Future<void> _selectYear(BuildContext context, TextEditingController controller, {bool isToYear = false}) async {
+  Future<void> _selectYear(
+    BuildContext context,
+    TextEditingController controller, {
+    bool isToYear = false,
+  }) async {
     final currentYear = DateTime.now().year;
     int? selectedYear;
 
@@ -158,7 +168,9 @@ class _ExperienceState extends State<Experience> {
     );
 
     if (selectedYear != null) {
-      controller.text = selectedYear == -1 ? 'Present' : selectedYear.toString();
+      controller.text = selectedYear == -1
+          ? 'Present'
+          : selectedYear.toString();
     }
   }
 
@@ -263,14 +275,18 @@ class _ExperienceState extends State<Experience> {
                                   children: [
                                     Expanded(
                                       child: GestureDetector(
-                                        onTap: () => _selectYear(context, yearController),
+                                        onTap: () => _selectYear(
+                                          context,
+                                          yearController,
+                                        ),
                                         child: AbsorbPointer(
                                           child: AppTextField(
                                             label: "From Year",
                                             controller: yearController,
                                             keyboardType: TextInputType.number,
                                             validator: (value) {
-                                              if (value == null || value.isEmpty) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
                                                 return 'Please enter the starting year';
                                               }
                                               return null;
@@ -281,72 +297,112 @@ class _ExperienceState extends State<Experience> {
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: Container(
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
+                                          borderRadius: BorderRadius.circular(12),
                                           border: Border.all(
-                                            color: Colors.white.withOpacity(
-                                              0.3,
-                                            ),
+                                            color: isDropdownOpen
+                                                ? Colors.white.withOpacity(0.9)
+                                                : Colors.white.withOpacity(0.3),
+                                            width: isDropdownOpen ? 1.5 : 1.0,
                                           ),
                                         ),
                                         child: DropdownButtonHideUnderline(
                                           child: DropdownButton2<String>(
                                             isExpanded: true,
-                                            dropdownStyleData:
-                                                DropdownStyleData(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          14,
-                                                        ),
-                                                    gradient:
-                                                        const LinearGradient(
-                                                          colors: [
-                                                            Color.fromARGB(
-                                                              255,
-                                                              152,
-                                                              146,
-                                                              244,
-                                                            ),
-                                                            Color(0xffe4d8fd),
-                                                            Color(0xff9b8fff),
-                                                          ],
-                                                          begin:
-                                                              Alignment.topLeft,
-                                                          end: Alignment
-                                                              .bottomRight,
-                                                        ),
-                                                  ),
+                                            dropdownStyleData: DropdownStyleData(
+                                              maxHeight: 200,
+                                              elevation: 0,
+                                              offset: const Offset(0, 4),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    Colors.white.withOpacity(0.25),
+                                                    Colors.white.withOpacity(0.08),
+                                                  ],
                                                 ),
+                                                border: Border.all(
+                                                  color: Colors.white.withOpacity(0.35),
+                                                  width: 1,
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.deepPurple.withOpacity(0.25),
+                                                    blurRadius: 24,
+                                                    offset: const Offset(0, 12),
+                                                  ),
+                                                ],
+                                              ),
+                                              scrollbarTheme: ScrollbarThemeData(
+                                                thickness: MaterialStateProperty.all(3),
+                                                radius: const Radius.circular(3),
+                                                thumbColor: MaterialStateProperty.all<Color>(
+                                                  const Color.fromARGB(108, 255, 255, 255),
+                                                ),
+                                              ),
+                                            ),
                                             hint: Text(
                                               'Select Month',
                                               style: TextStyle(
-                                                color: Colors.white.withOpacity(
-                                                  0.8,
-                                                ),
+                                                color: Colors.white.withOpacity(0.8),
                                               ),
                                             ),
                                             value: selectedMonth,
                                             items: month.map((m) {
                                               return DropdownMenuItem<String>(
                                                 value: m,
-                                                child: Text(
-                                                  m,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
+                                                child: TweenAnimationBuilder<double>(
+                                                  tween: Tween(begin: 0.0, end: 1.0),
+                                                  duration: Duration(milliseconds: 350 + (month.indexOf(m) * 40)),
+                                                  curve: Curves.easeOutBack,
+                                                  builder: (context, value, child) {
+                                                    return Opacity(
+                                                      opacity: value.clamp(0.0, 1.0),
+                                                      child: Transform.translate(
+                                                        offset: Offset(0, -10 * (1 - value)),
+                                                        child: child,
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    m,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
                                                   ),
                                                 ),
                                               );
                                             }).toList(),
                                             onChanged: (val) => setState(
                                               () => selectedMonth = val,
+                                            ),
+                                            onMenuStateChange: (isOpen) {
+                                              setState(() {
+                                                isDropdownOpen = isOpen;
+                                              });
+                                            },
+                                            iconStyleData: IconStyleData(
+                                              icon: AnimatedRotation(
+                                                turns: isDropdownOpen ? 0.5 : 0.0,
+                                                duration: const Duration(milliseconds: 260),
+                                                curve: Curves.easeOutCubic,
+                                                child: const Icon(
+                                                  Icons.keyboard_arrow_down_rounded,
+                                                  color: Colors.white,
+                                                  size: 22,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -359,14 +415,19 @@ class _ExperienceState extends State<Experience> {
                                   children: [
                                     Expanded(
                                       child: GestureDetector(
-                                        onTap: () => _selectYear(context, endYearController, isToYear: true),
+                                        onTap: () => _selectYear(
+                                          context,
+                                          endYearController,
+                                          isToYear: true,
+                                        ),
                                         child: AbsorbPointer(
                                           child: AppTextField(
                                             label: "To Year",
                                             controller: endYearController,
                                             keyboardType: TextInputType.number,
                                             validator: (value) {
-                                              if (value == null || value.isEmpty) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
                                                 return 'Please enter the ending year';
                                               }
                                               return null;
@@ -377,7 +438,9 @@ class _ExperienceState extends State<Experience> {
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: Container(
+                                      child: AnimatedContainer(
+                                        curve: Curves.easeInOut,
+                                        duration: const Duration(milliseconds: 300),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
                                           vertical: 4,
@@ -387,40 +450,69 @@ class _ExperienceState extends State<Experience> {
                                             12,
                                           ),
                                           border: Border.all(
-                                            color: Colors.white.withOpacity(
-                                              0.3,
-                                            ),
+                                            color: isEndDropdownOpen
+                                                ? Colors.white.withOpacity(0.9)
+                                                : Colors.white.withOpacity(0.3),
+                                            width: isEndDropdownOpen ? 1.5 : 1.0,
                                           ),
                                         ),
                                         child: DropdownButtonHideUnderline(
                                           child: DropdownButton2<String>(
                                             isExpanded: true,
-                                            dropdownStyleData:
-                                                DropdownStyleData(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          14,
-                                                        ),
-                                                    gradient:
-                                                        const LinearGradient(
-                                                          colors: [
-                                                            Color.fromARGB(
-                                                              255,
-                                                              152,
-                                                              146,
-                                                              244,
-                                                            ),
-                                                            Color(0xffe4d8fd),
-                                                            Color(0xff9b8fff),
-                                                          ],
-                                                          begin:
-                                                              Alignment.topLeft,
-                                                          end: Alignment
-                                                              .bottomRight,
-                                                        ),
-                                                  ),
+                                            dropdownStyleData: DropdownStyleData(
+                                              maxHeight: 200,
+                                              elevation: 0,
+                                              offset: const Offset(0, 4),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    Colors.white.withOpacity(
+                                                      0.25,
+                                                    ),
+                                                    Colors.white.withOpacity(
+                                                      0.08,
+                                                    ),
+                                                  ],
                                                 ),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.35),
+                                                  width: 1,
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.deepPurple
+                                                        .withOpacity(0.25),
+                                                    blurRadius: 24,
+                                                    offset: const Offset(0, 12),
+                                                  ),
+                                                ],
+                                              ),
+                                              scrollbarTheme: ScrollbarThemeData(
+                                                thickness:
+                                                    MaterialStateProperty.all(
+                                                      3,
+                                                    ),
+                                                radius: const Radius.circular(
+                                                  3,
+                                                ),
+                                                thumbColor:
+                                                    MaterialStateProperty.all<
+                                                      Color
+                                                    >(
+                                                      const Color.fromARGB(
+                                                        108,
+                                                        255,
+                                                        255,
+                                                        255,
+                                                      ),
+                                                    ),
+                                              ),
+                                            ),
                                             hint: Text(
                                               'Select Month',
                                               style: TextStyle(
@@ -432,18 +524,50 @@ class _ExperienceState extends State<Experience> {
                                             value: endSelectedMonth,
                                             items: month.map((m) {
                                               return DropdownMenuItem<String>(
-                                                value: m,
-                                                child: Text(
-                                                  m,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
+                                                value: m, // Each item needs a value
+                                                child: TweenAnimationBuilder<double>(
+                                                  tween: Tween(begin: 0.0, end: 1.0),
+                                                  duration: Duration(milliseconds: 350 + (month.indexOf(m) * 40)),
+                                                  curve: Curves.easeOutBack,
+                                                  builder: (context, value, child) {
+                                                    return Opacity(
+                                                      opacity: value.clamp(0.0, 1.0),
+                                                      child: Transform.translate(
+                                                        offset: Offset(0, -10 * (1 - value)),
+                                                        child: child,
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    m,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
                                                   ),
                                                 ),
                                               );
                                             }).toList(),
-                                            onChanged: (val) => setState(
+                                            onChanged: (val) => setState( 
                                               () => endSelectedMonth = val,
                                             ),
+                                            onMenuStateChange: (isOpen) {
+                                              setState(() {
+                                                isEndDropdownOpen = isOpen;
+                                              });
+                                            },
+                                            iconStyleData: IconStyleData(
+                                          icon: AnimatedRotation(
+                                            turns: isEndDropdownOpen ? 0.5 : 0.0,
+                                            duration: const Duration(milliseconds: 260),
+                                            curve: Curves.easeOutCubic,
+                                            child: const Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              color: Colors.white,
+                                              size: 22,
+                                            ),
+                                          ),
+                                        ),
                                           ),
                                         ),
                                       ),

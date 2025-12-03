@@ -124,24 +124,23 @@ class _HomePageState extends State<HomePage> {
                         LiquidGlassLayer(
                           settings: const LiquidGlassSettings(
                             thickness: 100, // thicker glass for depth
-                            refractiveIndex: 1.5, 
+                            refractiveIndex: 1.5,
                             lightAngle: 45,
-                            lightIntensity: 1.8, 
-                            ambientStrength:
-                                0.8, 
-                            saturation: 1.25, 
+                            lightIntensity: 1.8,
+                            ambientStrength: 0.8,
+                            saturation: 1.25,
                             visibility: 1.0,
                           ),
                           child: LiquidGlass(
                             shape: LiquidRoundedSuperellipse(borderRadius: 48),
                             glassContainsChild: false,
-                            
+
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(36),
                               child: Container(
                                 height: screenWidth > 600
-                                      ? 400
-                                      : screenWidth * 0.7,
+                                    ? 400
+                                    : screenWidth * 0.7,
                                 constraints: BoxConstraints(
                                   maxWidth: screenWidth > 600
                                       ? 420
@@ -178,7 +177,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                      
+
                         ClipRRect(
                           borderRadius: BorderRadius.circular(36),
                           child: Container(
@@ -222,8 +221,55 @@ class _HomePageState extends State<HomePage> {
                                     // Reset the page unlock state for a new resume
                                     func.reset();
                                     Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => CreateResume(),
+                                      PageRouteBuilder(
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => CreateResume(),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              // Slide from right + fade transition
+                                              const beginOffset = Offset(
+                                                1.0,
+                                                0.0,
+                                              );
+                                              const endOffset = Offset.zero;
+                                              final tween =
+                                                  Tween(
+                                                    begin: beginOffset,
+                                                    end: endOffset,
+                                                  ).chain(
+                                                    CurveTween(
+                                                      curve: Curves.easeInOut,
+                                                    ),
+                                                  );
+                                              final fadeTween = Tween(
+                                                begin: 0.0,
+                                                end: 1.0,
+                                              );
+
+                                              return SlideTransition(
+                                                position: animation.drive(
+                                                  tween,
+                                                ),
+                                                child: FadeTransition(
+                                                  opacity: animation.drive(
+                                                    fadeTween,
+                                                  ),
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                        transitionDuration: const Duration(
+                                          milliseconds: 600,
+                                        ),
                                       ),
                                     );
                                   },
@@ -249,8 +295,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
                                         Icons.edit_note,
@@ -275,8 +320,55 @@ class _HomePageState extends State<HomePage> {
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => ResumeData(),
+                                      PageRouteBuilder(
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => ResumeData(),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              // Slide from right + fade transition
+                                              const beginOffset = Offset(
+                                                1.0,
+                                                0.0,
+                                              );
+                                              const endOffset = Offset.zero;
+                                              final tween =
+                                                  Tween(
+                                                    begin: beginOffset,
+                                                    end: endOffset,
+                                                  ).chain(
+                                                    CurveTween(
+                                                      curve: Curves.easeInOut,
+                                                    ),
+                                                  );
+                                              final fadeTween = Tween(
+                                                begin: 0.0,
+                                                end: 1.0,
+                                              );
+
+                                              return SlideTransition(
+                                                position: animation.drive(
+                                                  tween,
+                                                ),
+                                                child: FadeTransition(
+                                                  opacity: animation.drive(
+                                                    fadeTween,
+                                                  ),
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                        transitionDuration: const Duration(
+                                          milliseconds: 600,
+                                        ),
                                       ),
                                     );
                                   },
@@ -304,8 +396,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       // Conditionally display the Icon based on screenWidth
                                       if (screenWidth * 0.07 >
@@ -339,8 +430,55 @@ class _HomePageState extends State<HomePage> {
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => ShowResume(),
+                                      PageRouteBuilder(
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => ShowResume(),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              // Slide from right + fade transition
+                                              const beginOffset = Offset(
+                                                1.0,
+                                                0.0,
+                                              );
+                                              const endOffset = Offset.zero;
+                                              final tween =
+                                                  Tween(
+                                                    begin: beginOffset,
+                                                    end: endOffset,
+                                                  ).chain(
+                                                    CurveTween(
+                                                      curve: Curves.easeInOut,
+                                                    ),
+                                                  );
+                                              final fadeTween = Tween(
+                                                begin: 0.0,
+                                                end: 1.0,
+                                              );
+
+                                              return SlideTransition(
+                                                position: animation.drive(
+                                                  tween,
+                                                ),
+                                                child: FadeTransition(
+                                                  opacity: animation.drive(
+                                                    fadeTween,
+                                                  ),
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                        transitionDuration: const Duration(
+                                          milliseconds: 600,
+                                        ),
                                       ),
                                     );
                                   },
@@ -358,8 +496,9 @@ class _HomePageState extends State<HomePage> {
                                       borderRadius: BorderRadius.circular(56),
                                     ),
                                     elevation: 6,
-                                    shadowColor: Colors.amberAccent
-                                        .withOpacity(0.7),
+                                    shadowColor: Colors.amberAccent.withOpacity(
+                                      0.7,
+                                    ),
                                     textStyle: TextStyle(
                                       fontSize: screenWidth * 0.045,
                                       overflow: TextOverflow.ellipsis,
@@ -367,8 +506,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
                                         Icons.folder_open_outlined,
@@ -393,8 +531,6 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                      
-                      
                       ],
                     ),
                   ),

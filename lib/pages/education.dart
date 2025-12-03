@@ -617,7 +617,7 @@ class _EducationState extends State<Education> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child:  Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),

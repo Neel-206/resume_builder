@@ -606,13 +606,32 @@ class _ShowResumeState extends State<ShowResume>
     if (file.existsSync()) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => PdfPreviewPage(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => PdfPreviewPage(
             path: resume['filePath'],
             resumeId: resume['resumeId'] ?? DateTime.now().millisecondsSinceEpoch,
             templateName: resume['templateName'],
             isViewingOnly: true,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Slide from right + fade transition
+          const beginOffset = Offset(1.0, 0.0);
+          const endOffset = Offset.zero;
+          final tween = Tween(
+            begin: beginOffset,
+            end: endOffset,
+          ).chain(CurveTween(curve: Curves.easeInOut));
+          final fadeTween = Tween(begin: 0.0, end: 1.0);
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: FadeTransition(
+              opacity: animation.drive(fadeTween),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 600),
         ),
       );
     } else {

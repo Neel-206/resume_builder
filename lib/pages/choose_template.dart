@@ -57,14 +57,21 @@ class _ChooseTemplateState extends State<ChooseTemplate> {
 
     // Replace the current page with the preview page to show the new template
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PdfPreviewPage(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => PdfPreviewPage(
           path: file.path,
           resumeId: widget.resumeId,
           templateName: templateName,
           originalFilePath: widget.originalFilePath, // Pass this along
           isViewingOnly: false, // Keep it in edit mode
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 500),
       ),
     );
   }

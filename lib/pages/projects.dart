@@ -442,7 +442,7 @@ class _ProjectsState extends State<Projects> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child:  Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),

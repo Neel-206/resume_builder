@@ -38,6 +38,7 @@ class _awardpageState extends State<awardpage> {
     'December',
   ];
   String? selectedMonth;
+  bool isDropdownOpen = false;
 
   @override
   void initState() {
@@ -257,63 +258,130 @@ class _awardpageState extends State<awardpage> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: isDropdownOpen
+                                            ? Colors.white.withOpacity(0.9)
+                                            : Colors.white.withOpacity(0.3),
+                                        width: isDropdownOpen ? 1.5 : 1.0,
                                       ),
                                     ),
                                     child: DropdownButtonHideUnderline(
                                       child: DropdownButton2<String>(
                                         isExpanded: true,
                                         dropdownStyleData: DropdownStyleData(
+                                          maxHeight: 200,
+                                          elevation: 0,
+                                          offset: const Offset(0, 4),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(18),
                                             gradient: LinearGradient(
-                                              colors: [
-                                                Color.fromARGB(
-                                                  255,
-                                                  152,
-                                                  146,
-                                                  244,
-                                                ),
-                                                Color(0xffe4d8fd),
-                                                Color(0xff9b8fff),
-                                              ],
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
+                                              colors: [
+                                                Colors.white.withOpacity(0.25),
+                                                Colors.white.withOpacity(0.08),
+                                              ],
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white
+                                                  .withOpacity(0.35),
+                                              width: 1,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.deepPurple
+                                                    .withOpacity(0.25),
+                                                blurRadius: 24,
+                                                offset: const Offset(0, 12),
+                                              ),
+                                            ],
+                                          ),
+                                          scrollbarTheme: ScrollbarThemeData(
+                                            thickness:
+                                                MaterialStateProperty.all(3),
+                                            radius: const Radius.circular(3),
+                                            thumbColor: MaterialStateProperty
+                                                .all<Color>(
+                                              const Color.fromARGB(
+                                                  108, 255, 255, 255),
                                             ),
                                           ),
                                         ),
                                         hint: Text(
                                           'Select month',
                                           style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.8,
-                                            ),
+                                            color:
+                                                Colors.white.withOpacity(0.8),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         value: selectedMonth,
                                         items: month.map((m) {
                                           return DropdownMenuItem<String>(
                                             value: m,
-                                            child: Text(
-                                              m,
-                                              style: TextStyle(
-                                                color: Colors.white,
+                                            child: TweenAnimationBuilder<
+                                                double>(
+                                              tween: Tween(
+                                                  begin: 0.0, end: 1.0),
+                                              duration: Duration(
+                                                  milliseconds: 350 +
+                                                      (month.indexOf(m) *
+                                                          40)),
+                                              curve: Curves.easeOutBack,
+                                              builder:
+                                                  (context, value, child) {
+                                                return Opacity(
+                                                  opacity:
+                                                      value.clamp(0.0, 1.0),
+                                                  child: Transform.translate(
+                                                    offset: Offset(
+                                                        0, -10 * (1 - value)),
+                                                    child: child,
+                                                  ),
+                                                );
+                                              },
+                                              child: Text(
+                                                m,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           );
                                         }).toList(),
-                                        onChanged: (val) =>
-                                            setState(() => selectedMonth = val),
+                                        onChanged: (val) => setState(
+                                            () => selectedMonth = val),
+                                        onMenuStateChange: (isOpen) {
+                                          setState(() {
+                                            isDropdownOpen = isOpen;
+                                          });
+                                        },
+                                        iconStyleData: IconStyleData(
+                                          icon: AnimatedRotation(
+                                            turns: isDropdownOpen ? 0.5 : 0.0,
+                                            duration: const Duration(
+                                                milliseconds: 260),
+                                            curve: Curves.easeOutCubic,
+                                            child: const Icon(
+                                              Icons
+                                                  .keyboard_arrow_down_rounded,
+                                              color: Colors.white,
+                                              size: 22,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
