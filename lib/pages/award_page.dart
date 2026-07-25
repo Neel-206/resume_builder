@@ -7,7 +7,9 @@ import 'package:resume_builder/services/func.dart';
 
 class awardpage extends StatefulWidget {
   final VoidCallback? onNext;
-  const awardpage({super.key, this.onNext});
+  final int resumeId;
+  final bool singlePageMode;
+  const awardpage({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<awardpage> createState() => _awardpageState();
@@ -36,6 +38,7 @@ class _awardpageState extends State<awardpage> {
     'December',
   ];
   String? selectedMonth;
+  bool isDropdownOpen = false;
 
   @override
   void initState() {
@@ -43,8 +46,25 @@ class _awardpageState extends State<awardpage> {
     _loadAwards();
   }
 
+  @override
+  void didUpdateWidget(covariant awardpage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.resumeId != oldWidget.resumeId) {
+      _clearControllersAndLists();
+      _loadAwards();
+    }
+  }
+
+  void _clearControllersAndLists() {
+    titleController.clear();
+    issueController.clear();
+    yearController.clear();
+    discriptionController.clear();
+    awards.clear();
+  }
+
   void _loadAwards() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAwards);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAwards, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         awards.clear();
@@ -58,13 +78,16 @@ class _awardpageState extends State<awardpage> {
         issueController.text.trim().isNotEmpty ||
         yearController.text.trim().isNotEmpty ||
         discriptionController.text.trim().isNotEmpty) {
+      // Add resumeId to the row
       Map<String, dynamic> row = {
         'title': titleController.text.trim(),
         'issuer': issueController.text.trim(),
         'year': yearController.text.trim(),
         'month': selectedMonth,
         'description': discriptionController.text.trim(),
+ 'resumeId': widget.resumeId,
       };
+      row['resumeId'] = widget.resumeId;
       final id = await dbHelper.insert(DatabaseHelper.tableAwards, row);
       row['id'] = id;
       setState(() {
@@ -85,10 +108,58 @@ class _awardpageState extends State<awardpage> {
   }
 
   void _deleteAward(int id, int index) async {
-    await dbHelper.delete(DatabaseHelper.tableAwards, id);
+    await dbHelper.delete(DatabaseHelper.tableAwards, id); // Assuming ID is unique enough for deletion
     setState(() {
       awards.removeAt(index);
     });
+  }
+
+    Future<void> selectYear(BuildContext context, TextEditingController controller, {bool isToYear = false}) async {
+    final currentYear = DateTime.now().year;
+    int? selectedYear;
+
+    DateTime initialDate = DateTime.now();
+    if (controller.text.isNotEmpty && controller.text != 'Present') {
+      final parsedYear = int.tryParse(controller.text);
+      if (parsedYear != null) {
+        initialDate = DateTime(parsedYear);
+      }
+    }
+
+    selectedYear = await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Select Year"),
+          content: Container(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(1950),
+              lastDate: DateTime(currentYear + 10),
+              initialDate: initialDate,
+              selectedDate: initialDate,
+              onChanged: (DateTime dateTime) {
+                Navigator.of(context).pop(dateTime.year);
+              },
+            ),
+          ),
+          actions: <Widget>[
+            if (isToYear)
+              TextButton(
+                child: const Text('Present'),
+                onPressed: () {
+                  Navigator.of(context).pop(-1); // Use -1 to signify "Present"
+                },
+              ),
+          ],
+        );
+      },
+    );
+
+    if (selectedYear != null) {
+      controller.text = selectedYear == -1 ? 'Present' : selectedYear.toString();
+    }
   }
 
   @override
@@ -173,72 +244,144 @@ class _awardpageState extends State<awardpage> {
                               controller: issueController,
                             ),
                             SizedBox(height: 12),
-                            AppTextField(
-                              label: "Year",
-                              controller: yearController,
-                              keyboardType: TextInputType.number,
+                            GestureDetector(
+                              onTap: () => selectYear(context, yearController),
+                              child: AbsorbPointer(
+                                child: AppTextField(
+                                  label: "Year",
+                                  controller: yearController,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
                             ),
                             SizedBox(height: 12),
                             Row(
                               children: [
                                 Expanded(
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: isDropdownOpen
+                                            ? Colors.white.withOpacity(0.9)
+                                            : Colors.white.withOpacity(0.3),
+                                        width: isDropdownOpen ? 1.5 : 1.0,
                                       ),
                                     ),
                                     child: DropdownButtonHideUnderline(
                                       child: DropdownButton2<String>(
                                         isExpanded: true,
                                         dropdownStyleData: DropdownStyleData(
+                                          maxHeight: 200,
+                                          elevation: 0,
+                                          offset: const Offset(0, 4),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(18),
                                             gradient: LinearGradient(
-                                              colors: [
-                                                Color.fromARGB(
-                                                  255,
-                                                  152,
-                                                  146,
-                                                  244,
-                                                ),
-                                                Color(0xffe4d8fd),
-                                                Color(0xff9b8fff),
-                                              ],
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
+                                              colors: [
+                                                Colors.white.withOpacity(0.25),
+                                                Colors.white.withOpacity(0.08),
+                                              ],
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white
+                                                  .withOpacity(0.35),
+                                              width: 1,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.deepPurple
+                                                    .withOpacity(0.25),
+                                                blurRadius: 24,
+                                                offset: const Offset(0, 12),
+                                              ),
+                                            ],
+                                          ),
+                                          scrollbarTheme: ScrollbarThemeData(
+                                            thickness:
+                                                MaterialStateProperty.all(3),
+                                            radius: const Radius.circular(3),
+                                            thumbColor: MaterialStateProperty
+                                                .all<Color>(
+                                              const Color.fromARGB(
+                                                  108, 255, 255, 255),
                                             ),
                                           ),
                                         ),
                                         hint: Text(
                                           'Select month',
                                           style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.8,
-                                            ),
+                                            color:
+                                                Colors.white.withOpacity(0.8),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         value: selectedMonth,
                                         items: month.map((m) {
                                           return DropdownMenuItem<String>(
                                             value: m,
-                                            child: Text(
-                                              m,
-                                              style: TextStyle(
-                                                color: Colors.white,
+                                            child: TweenAnimationBuilder<
+                                                double>(
+                                              tween: Tween(
+                                                  begin: 0.0, end: 1.0),
+                                              duration: Duration(
+                                                  milliseconds: 350 +
+                                                      (month.indexOf(m) *
+                                                          40)),
+                                              curve: Curves.easeOutBack,
+                                              builder:
+                                                  (context, value, child) {
+                                                return Opacity(
+                                                  opacity:
+                                                      value.clamp(0.0, 1.0),
+                                                  child: Transform.translate(
+                                                    offset: Offset(
+                                                        0, -10 * (1 - value)),
+                                                    child: child,
+                                                  ),
+                                                );
+                                              },
+                                              child: Text(
+                                                m,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           );
                                         }).toList(),
-                                        onChanged: (val) =>
-                                            setState(() => selectedMonth = val),
+                                        onChanged: (val) => setState(
+                                            () => selectedMonth = val),
+                                        onMenuStateChange: (isOpen) {
+                                          setState(() {
+                                            isDropdownOpen = isOpen;
+                                          });
+                                        },
+                                        iconStyleData: IconStyleData(
+                                          icon: AnimatedRotation(
+                                            turns: isDropdownOpen ? 0.5 : 0.0,
+                                            duration: const Duration(
+                                                milliseconds: 260),
+                                            curve: Curves.easeOutCubic,
+                                            child: const Icon(
+                                              Icons
+                                                  .keyboard_arrow_down_rounded,
+                                              color: Colors.white,
+                                              size: 22,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -365,10 +508,9 @@ class _awardpageState extends State<awardpage> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  bool next = func.unlockpage(pageindex);
-              
-              if(next && widget.onNext != null){
-                widget.onNext?.call();// Navigate to next page
+                  if (widget.onNext != null) {
+                    func.unlockpage(pageindex); // Unlock the page
+                    widget.onNext?.call(); // Navigate to next page or pop
               }
                   // if (widget.onNext != null) {
                   //   widget.onNext!();
@@ -393,7 +535,7 @@ class _awardpageState extends State<awardpage> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child: Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),

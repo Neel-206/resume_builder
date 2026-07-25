@@ -6,7 +6,10 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Projects extends StatefulWidget {
   final VoidCallback? onNext;
-  const Projects({super.key, this.onNext});
+
+  final int resumeId;
+  final bool singlePageMode;
+  const Projects({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<Projects> createState() => _ProjectsState();
@@ -31,22 +34,25 @@ class _ProjectsState extends State<Projects> {
   }
 
   void _loadProjects() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProjects);
-    setState(() {
-      projects.addAll(allRows);
-    });
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProjects, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
+    if (mounted) {  // Check if widget is still mounted before calling setState
+      setState(() {
+        projects.addAll(allRows);
+      });
+    }
   }
 
-  // @override
-  // void dispose() {
-  //   nameController.dispose();
-  //   roleController.dispose();
-  //   descController.dispose();
-  //   techController.dispose();
-  //   linkController.dispose();
-  //   yearController.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    // Properly dispose of all controllers
+    nameController.dispose();
+    roleController.dispose();
+    descController.dispose();
+    techController.dispose();
+    linkController.dispose();
+    yearController.dispose();
+    super.dispose();
+  }
 
   void _addProject() async {
     Map<String, dynamic> project = {
@@ -56,6 +62,7 @@ class _ProjectsState extends State<Projects> {
       'technologies': techController.text,
       'link': linkController.text,
       'year': yearController.text,
+      'resumeId': widget.resumeId,
     };
 
     if (project.values.any((element) => element.isNotEmpty)) {
@@ -84,6 +91,54 @@ class _ProjectsState extends State<Projects> {
     setState(() {
       projects.removeAt(index);
     });
+  }
+
+    Future<void> selectYear(BuildContext context, TextEditingController controller, {bool isToYear = false}) async {
+    final currentYear = DateTime.now().year;
+    int? selectedYear;
+
+    DateTime initialDate = DateTime.now();
+    if (controller.text.isNotEmpty && controller.text != 'Present') {
+      final parsedYear = int.tryParse(controller.text);
+      if (parsedYear != null) {
+        initialDate = DateTime(parsedYear);
+      }
+    }
+
+    selectedYear = await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Select Year"),
+          content: Container(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(1950),
+              lastDate: DateTime(currentYear + 10),
+              initialDate: initialDate,
+              selectedDate: initialDate,
+              onChanged: (DateTime dateTime) {
+                Navigator.of(context).pop(dateTime.year);
+              },
+            ),
+          ),
+          actions: <Widget>[
+            if (isToYear)
+              TextButton(
+                child: const Text('Present'),
+                onPressed: () {
+                  Navigator.of(context).pop(-1); // Use -1 to signify "Present"
+                },
+              ),
+          ],
+        );
+      },
+    );
+
+    if (selectedYear != null) {
+      controller.text = selectedYear == -1 ? 'Present' : selectedYear.toString();
+    }
   }
 
   @override
@@ -220,16 +275,21 @@ class _ProjectsState extends State<Projects> {
                                       },
                                     ),
                                     const SizedBox(height: 12),
-                                    AppTextField(
-                                      label: 'Year',
-                                      controller: yearController,
-                                      keyboardType: TextInputType.number,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter the year of completion';
-                                        }
-                                        return null;
-                                      },
+                                    GestureDetector(
+                                      onTap: () => selectYear(context, yearController),
+                                      child: AbsorbPointer(
+                                        child: AppTextField(
+                                          label: 'Year',
+                                          controller: yearController,
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter the year of completion';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -382,7 +442,7 @@ class _ProjectsState extends State<Projects> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child:  Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),

@@ -8,7 +8,10 @@ import 'package:resume_builder/services/database_helper.dart';
 class Aboutme extends StatefulWidget {
   final VoidCallback? onNext;
 
-  const Aboutme({super.key, this.onNext});
+  final int resumeId;
+
+  final bool singlePageMode;
+  const Aboutme({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<Aboutme> createState() => _AboutmeState();
@@ -26,7 +29,8 @@ class _AboutmeState extends State<Aboutme> {
   }
 
   void _loadAboutData() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout,
+        where: 'resumeId = ?', whereArgs: [widget.resumeId], orderBy: 'id');
     if (allRows.isNotEmpty) {
       setState(() {
         aboutController.text = allRows.first['aboutText'] ?? '';
@@ -37,9 +41,11 @@ class _AboutmeState extends State<Aboutme> {
   void _saveAboutData() async {
     Map<String, dynamic> row = {
       'aboutText': aboutController.text,
+      'resumeId': widget.resumeId,
     };
 
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableAbout,
+        where: 'resumeId = ?', whereArgs: [widget.resumeId], orderBy: 'id');
     if (allRows.isEmpty) {
       await dbHelper.insert(DatabaseHelper.tableAbout, row);
     } else {
@@ -170,7 +176,7 @@ class _AboutmeState extends State<Aboutme> {
               );
             }
           },
-          child: Text('Next'),
+          child: Text(widget.singlePageMode ? 'Save' : 'Next'),
           style: ElevatedButton.styleFrom(
             minimumSize: Size(double.infinity, 62),
             backgroundColor: Color.fromARGB(255, 111, 101, 247),

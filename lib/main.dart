@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:resume_builder/pages/home_page.dart';
+import 'package:resume_builder/pages/splash_screen.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 Future<void> main() async {
@@ -24,8 +24,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Resume Maker',
-      theme: ThemeData(primarySwatch: Colors.deepPurple),
-      home: const HomePage(),
+       theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const SplashScreen(),
     );
   }
 }

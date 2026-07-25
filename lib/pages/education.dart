@@ -7,8 +7,14 @@ import 'package:resume_builder/services/database_helper.dart';
 class Education extends StatefulWidget {
   final VoidCallback? onNext;
 
-  const Education({super.key, this.onNext});
-
+  final int resumeId;
+  final bool singlePageMode;
+  const Education({
+    super.key,
+    this.onNext,
+    required this.resumeId,
+    this.singlePageMode = false,
+  });
   @override
   State<Education> createState() => _EducationState();
 }
@@ -34,7 +40,11 @@ class _EducationState extends State<Education> {
   }
 
   void _loadEducation() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableEducation);
+    final allRows = await dbHelper.queryAllRows(
+      DatabaseHelper.tableEducation,
+      where: 'resumeId = ?',
+      whereArgs: [widget.resumeId],
+    );
     if (mounted) {
       setState(() {
         educationList.clear();
@@ -63,6 +73,7 @@ class _EducationState extends State<Education> {
         'toYear': toController.text.trim(),
         'description': discriptionController.text.trim(),
         'marks': marksController.text.trim(),
+        'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableEducation, row);
       row['id'] = id;
@@ -93,6 +104,208 @@ class _EducationState extends State<Education> {
       educationList.removeAt(index);
     });
   }
+
+  Future<void> _selectYear(
+    BuildContext context,
+    TextEditingController controller, {
+    bool isToYear = false,
+  }) async {
+    final currentYear = DateTime.now().year;
+    int? selectedYear;
+
+    DateTime initialDate = DateTime.now();
+    if (controller.text.isNotEmpty && controller.text != 'Present') {
+      final parsedYear = int.tryParse(controller.text);
+      if (parsedYear != null) {
+        initialDate = DateTime(parsedYear);
+      }
+    }
+
+    selectedYear = await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Select Year"),
+          content: Container(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(1950),
+              lastDate: DateTime(currentYear + 10),
+              initialDate: initialDate,
+              selectedDate: initialDate,
+              onChanged: (DateTime dateTime) {
+                Navigator.of(context).pop(dateTime.year);
+              },
+            ),
+          ),
+          actions: <Widget>[
+            if (isToYear)
+              TextButton(
+                child: const Text('Present'),
+                onPressed: () {
+                  Navigator.of(context).pop(-1); // Use -1 to signify "Present"
+                },
+              ),
+          ],
+        );
+      },
+    );
+
+    if (selectedYear != null) {
+      controller.text = selectedYear == -1
+          ? 'Present'
+          : selectedYear.toString();
+    }
+  }
+
+  Widget buildEducationRow(Map<String, dynamic> edu, int index) {
+  final from = edu['fromYear'] ?? '';
+  final to = edu['toYear'] ?? '';
+  final duration = (from.isNotEmpty || to.isNotEmpty) ? '$from  -  $to' : '';
+
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Leading bullet / icon
+      Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [
+              Colors.lightBlueAccent.withOpacity(0.9),
+              Colors.blueAccent.withOpacity(0.9),
+            ],
+          ),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.school_rounded,
+          size: 18,
+          color: Colors.white,
+        ),
+      ),
+      const SizedBox(width: 12),
+
+      // Texts
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top row: school + years
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    edu['school'] ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+                if (duration.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    duration,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.65),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+
+            const SizedBox(height: 4),
+            Text(
+              '${edu['degree'] ?? ''} • ${edu['field'] ?? ''}'.trim(),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 14,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  Icons.location_on_rounded,
+                  size: 14,
+                  color: Colors.white.withOpacity(0.6),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '${edu['place'] ?? ''} ${edu['country'] ?? ''}'.trim(),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.65),
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            if ((edu['marks'] ?? '').toString().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.workspace_premium_rounded,
+                    size: 14,
+                    color: Colors.amberAccent.withOpacity(0.9),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    edu['marks'],
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            if ((edu['description'] ?? '').toString().isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                edu['description'],
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 13,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+
+      IconButton(
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        icon: Icon(
+          Icons.close_rounded,
+          color: Colors.white.withOpacity(0.7),
+          size: 18,
+        ),
+        onPressed: () => _deleteEducation(edu['id'], index),
+      ),
+    ],
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +448,6 @@ class _EducationState extends State<Education> {
                                         return null;
                                       },
                                     ),
-                          
                                   ),
                                 ],
                               ),
@@ -243,30 +455,47 @@ class _EducationState extends State<Education> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: AppTextField(
-                                      label: 'From Year',
-                                      controller: fromController,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter From Year';
-                                        }
-                                        return null;
-                                      },
-                                      keyboardType: TextInputType.number,
+                                    child: GestureDetector(
+                                      onTap: () =>
+                                          _selectYear(context, fromController),
+                                      child: AbsorbPointer(
+                                        child: AppTextField(
+                                          label: 'From Year',
+                                          controller: fromController,
+                                          validator: (value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'Please enter From Year';
+                                            }
+                                            return null;
+                                          },
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: AppTextField(
-                                      label: 'To Year',
-                                      controller: toController,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter To Year';
-                                        }
-                                        return null;
-                                      },  
-                                      keyboardType: TextInputType.number,
+                                    child: GestureDetector(
+                                      onTap: () => _selectYear(
+                                        context,
+                                        toController,
+                                        isToYear: true,
+                                      ),
+                                      child: AbsorbPointer(
+                                        child: AppTextField(
+                                          label: 'To Year',
+                                          controller: toController,
+                                          validator: (value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'Please enter To Year';
+                                            }
+                                            return null;
+                                          },
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -296,126 +525,41 @@ class _EducationState extends State<Education> {
                                 ...educationList.asMap().entries.map((entry) {
                                   final index = entry.key;
                                   final Edu = entry.value;
-                          
+
                                   return Container(
-                                    margin: const EdgeInsets.only(bottom: 8),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
+                                    margin: const EdgeInsets.only(bottom: 12),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(18),
+                                      
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.white.withOpacity(0.12),
+                                          Colors.white.withOpacity(0.04),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.18),
+                                        width: 2,
+                                      ),
+                                    
                                     ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                Edu['school'] ?? '',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['field'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['degree'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['place'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['country'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['fromYear'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['toYear'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['description'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                Edu['marks'] ?? '',
-                                                style: TextStyle(
-                                                  color: Colors.white.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 14,
-                                                  
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(18),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                          sigmaX: 20,
+                                          sigmaY: 20,
                                         ),
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.close,
-                                            color: Colors.white70,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 14,
                                           ),
-                                          onPressed: () {
-                                            _deleteEducation(Edu['id'], index);
-                                          },
+                                          child: buildEducationRow(Edu, index),
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   );
                                 }),
@@ -432,23 +576,24 @@ class _EducationState extends State<Education> {
           ),
         ),
       ),
-       floatingActionButton: SizedBox(
+      floatingActionButton: SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
         child: Row(
           children: [
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if(educationList.isNotEmpty) {
-                     bool next = func.unlockpage(pageindex);
-                     if(next && widget.onNext != null){
-                        widget.onNext?.call();// Navigate to next page
-                     }
-                  }else{
+                  if (educationList.isNotEmpty) {
+                    bool next = func.unlockpage(pageindex);
+                    if (next && widget.onNext != null) {
+                      widget.onNext?.call(); // Navigate to next page
+                    }
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content:
-                            Text('Please add at least one education entry.'),
+                        content: Text(
+                          'Please add at least one education entry.',
+                        ),
                       ),
                     );
                   }
@@ -472,7 +617,7 @@ class _EducationState extends State<Education> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child:  Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),
@@ -515,14 +660,15 @@ class _EducationState extends State<Education> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: (){
-                          if(form_Key.currentState?.validate() ?? false) {
+                        onTap: () {
+                          if (form_Key.currentState?.validate() ?? false) {
                             _addEducation();
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content:
-                                    Text('Please fill required fields correctly.'),
+                                content: Text(
+                                  'Please fill required fields correctly.',
+                                ),
                               ),
                             );
                           }

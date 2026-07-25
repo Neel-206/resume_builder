@@ -243,7 +243,7 @@ class ModernTemplate {
       sidebarY += 13;
     }
     sidebarY += 10;
-
+ if (languagesList.isNotEmpty) {
     graphics.drawLine(
       PdfPen(PdfColor(0, 0, 0), width: 1),
       Offset(sidebarPadding, sidebarY),
@@ -252,7 +252,7 @@ class ModernTemplate {
     sidebarY += 10;
 
     // -- Languages Section --
-    if (languagesList.isNotEmpty) {
+   
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -295,7 +295,7 @@ class ModernTemplate {
       }
       sidebarY += 10;
     }
-
+ if (skillsList.isNotEmpty) {
     graphics.drawLine(
       PdfPen(PdfColor(0, 0, 0), width: 1),
       Offset(sidebarPadding, sidebarY),
@@ -304,7 +304,7 @@ class ModernTemplate {
     sidebarY += 10;
 
     // -- Skills Section --
-    if (skillsList.isNotEmpty) {
+   
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -352,7 +352,7 @@ class ModernTemplate {
       }
       sidebarY += 10;
     }
-
+if (hobbiesList.isNotEmpty) {
     graphics.drawLine(
       PdfPen(PdfColor(0, 0, 0), width: 1),
       Offset(sidebarPadding, sidebarY),
@@ -361,7 +361,7 @@ class ModernTemplate {
     sidebarY += 10;
 
     // -- Hobbies Section --
-    if (hobbiesList.isNotEmpty) {
+    
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -400,7 +400,7 @@ class ModernTemplate {
       }
       sidebarY += 5;
     }
-
+ if (referencesList.isNotEmpty) {
     graphics.drawLine(
       PdfPen(PdfColor(0, 0, 0), width: 1),
       Offset(sidebarPadding, sidebarY),
@@ -409,7 +409,7 @@ class ModernTemplate {
     sidebarY += 10;
 
     //--- REFERENCES SECTION ---
-    if (referencesList.isNotEmpty) {
+   
       checkSidebarPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(sidebarPageIndex);
       graphics = page.graphics;
@@ -647,15 +647,16 @@ class ModernTemplate {
           15;
     }
 
+
+    // -- Awards Section --
+    if (awardsList.isNotEmpty) {
+
     graphics.drawLine(
       PdfPen(PdfColor(0, 0, 0), width: 1.5),
       Offset(mainContentX, mainY),
       Offset(mainContentX + mainContentWidth, mainY),
     );
     mainY += 5;
-
-    // -- Awards Section --
-    if (awardsList.isNotEmpty) {
       checkMainPageBreak(50, isSectionHeader: true);
       page = getPageAtIndex(mainPageIndex);
       graphics = page.graphics;
@@ -734,18 +735,27 @@ class ModernTemplate {
     mainY += 5;
 
     // -- Experience Section --
-    if (experienceList.isNotEmpty) {
-      checkMainPageBreak(50, isSectionHeader: true);
-      page = getPageAtIndex(mainPageIndex);
-      graphics = page.graphics;
+    checkMainPageBreak(50, isSectionHeader: true);
+    page = getPageAtIndex(mainPageIndex);
+    graphics = page.graphics;
 
+    graphics.drawString(
+      'EXPERIENCES',
+      mainSectionFont,
+      brush: PdfSolidBrush(sectionHeaderColor),
+      bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
+    );
+    mainY += 18;
+    
+    if (experienceList.isEmpty) {
       graphics.drawString(
-        'EXPERIENCES',
-        mainSectionFont,
-        brush: PdfSolidBrush(sectionHeaderColor),
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 20),
+        'Fresher',
+        mainSubHeaderFont,
+        brush: PdfSolidBrush(mainHeaderColor),
+        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 12),
       );
-      mainY += 18;
+      mainY += 14;
+    } else {
       for (var exp in experienceList) {
         checkMainPageBreak(60);
         page = getPageAtIndex(mainPageIndex);

@@ -541,18 +541,27 @@ class ProfessionalTemplate {
     }
 
     // -- Experience Section --
-    if (experienceList.isNotEmpty) {
-      checkMainPageBreak(50, isSectionHeader: true);
-      page = getPageAtIndex(mainPageIndex);
-      graphics = page.graphics;
+    checkMainPageBreak(50, isSectionHeader: true);
+    page = getPageAtIndex(mainPageIndex);
+    graphics = page.graphics;
 
+    graphics.drawString(
+      'WORK EXPERIENCE',
+      sidebarSectionFont,
+      brush: PdfSolidBrush(sectionHeaderColor),
+      bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 15),
+    );
+    mainY += 18;
+
+    if (experienceList.isEmpty) {
       graphics.drawString(
-        'WORK EXPERIENCE',
-        sidebarSectionFont,
-        brush: PdfSolidBrush(sectionHeaderColor),
-        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 15),
+        'Fresher',
+        mainSubHeaderFont,
+        brush: PdfSolidBrush(mainHeaderColor),
+        bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 12),
       );
-      mainY += 18;
+      mainY += 14;
+    } else {
 
       for (var exp in experienceList) {
         checkMainPageBreak(70);

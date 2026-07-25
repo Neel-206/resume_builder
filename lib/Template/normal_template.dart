@@ -523,18 +523,45 @@ class NormalTemplate {
     }
 
     // --- EXPERIENCE SECTION ---
-    if (experienceList.isNotEmpty) {
-      checkPageBreak(60, isSectionHeader: true);
+    checkPageBreak(60, isSectionHeader: true);
+    graphics = page.graphics;
+
+    graphics.drawString(
+      'EXPERIENCE',
+      mainSectionFont,
+      brush: PdfSolidBrush(sectionHeaderColor),
+      bounds: Rect.fromLTWH(contentX, currentY, contentWidth, 20),
+    );
+    currentY += 22;
+
+    if (experienceList.isEmpty) {
+      checkPageBreak(75);
       graphics = page.graphics;
 
       graphics.drawString(
-        'EXPERIENCE',
-        mainSectionFont,
-        brush: PdfSolidBrush(sectionHeaderColor),
-        bounds: Rect.fromLTWH(contentX, currentY, contentWidth, 20),
+        'Fresher',
+        mainSubHeaderFont,
+        brush: PdfSolidBrush(textColor),
+        bounds: Rect.fromLTWH(
+          contentX,
+          currentY,
+          contentWidth,
+          mainSubHeaderFont.height, 
+        ),
+        format: PdfStringFormat(
+          alignment: PdfTextAlignment.left,
+        ),
       );
-      currentY += 22;
+      currentY += mainSubHeaderFont.height + 2;
 
+      currentY += 10;
+      graphics.drawLine(
+        PdfPen(PdfColor(200, 200, 200), width: 0.5),
+        Offset(contentX, currentY),
+        Offset(contentX + contentWidth, currentY),
+      );
+      currentY += 15;
+    } else {
       for (var exp in experienceList) {
         checkPageBreak(75);
         graphics = page.graphics;

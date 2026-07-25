@@ -6,8 +6,9 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Languages extends StatefulWidget {
   final VoidCallback? onNext;
-
-  const Languages({super.key, this.onNext});
+  final int resumeId;
+  final bool singlePageMode;
+  const Languages({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
 
   @override
   State<Languages> createState() => _LanguagesState();
@@ -29,7 +30,7 @@ class _LanguagesState extends State<Languages> {
   }
 
   void _loadLanguages() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableLanguages);
+    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableLanguages, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
     if (mounted) {
       setState(() {
         languagesList.clear();
@@ -46,13 +47,14 @@ class _LanguagesState extends State<Languages> {
     }
   }
 
-  void _addLanguage() async {
+  void addLanguage() async {
     if (languageController.text.trim().isNotEmpty) {
       Map<String, dynamic> row = {
         'name': languageController.text.trim(),
         'canRead': canRead ? 1 : 0,
         'canWrite': canWrite ? 1 : 0,
         'canSpeak': canSpeak ? 1 : 0,
+ 'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableLanguages, row);
       row['id'] = id;
@@ -252,239 +254,243 @@ class _LanguagesState extends State<Languages> {
                   const SizedBox(height: 20),
                   if (languagesList.isNotEmpty) ...[
                     for (var i = 0; i < languagesList.length; i++)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 25,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 1.5,
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(25),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 25,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.deepPurple.withOpacity(0.2),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(25),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1.5,
                                 ),
-                              ],
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.40),
-                                  Colors.white.withOpacity(0.15),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.deepPurple.withOpacity(0.2),
+                                    blurRadius: 30,
+                                    offset: const Offset(0, 12),
+                                  ),
                                 ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.40),
+                                    Colors.white.withOpacity(0.15),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    languagesList[i]['name'],
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      languagesList[i]['name'],
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Row(
-                                  children: [
-                                    if (languagesList[i]['read'])
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(7),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                            sigmaX: 20,
-                                            sigmaY: 20,
-                                          ),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 5,
+                                  Row(
+                                    children: [
+                                      if (languagesList[i]['read'])
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(7),
+                                          child: BackdropFilter(
+                                            filter: ImageFilter.blur(
+                                              sigmaX: 20,
+                                              sigmaY: 20,
                                             ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.green.withOpacity(
-                                                0.25,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 5,
                                               ),
-                                              borderRadius:
-                                                  BorderRadius.circular(7),
-                                              border: Border.all(
+                                              decoration: BoxDecoration(
                                                 color: Colors.green.withOpacity(
-                                                  0.3,
+                                                  0.25,
                                                 ),
-                                                width: 1.5,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.lightGreen
-                                                      .withOpacity(0.2),
-                                                  blurRadius: 30,
-                                                  offset: const Offset(0, 12),
+                                                borderRadius:
+                                                    BorderRadius.circular(7),
+                                                border: Border.all(
+                                                  color: Colors.green.withOpacity(
+                                                    0.3,
+                                                  ),
+                                                  width: 1.5,
                                                 ),
-                                              ],
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.green.withOpacity(1),
-                                                  Colors.green.withOpacity(
-                                                    0.50,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.lightGreen
+                                                        .withOpacity(0.2),
+                                                    blurRadius: 30,
+                                                    offset: const Offset(0, 12),
                                                   ),
                                                 ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.green.withOpacity(1),
+                                                    Colors.green.withOpacity(
+                                                      0.50,
+                                                    ),
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
                                               ),
-                                            ),
-                                            child: Text(
-                                              'Read',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
+                                              child: Text(
+                                                'Read',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    SizedBox(width: 5),
-                                    if (languagesList[i]['write'])
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(7),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                            sigmaX: 20,
-                                            sigmaY: 20,
-                                          ),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 5,
+                                      SizedBox(width: 5),
+                                      if (languagesList[i]['write'])
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(7),
+                                          child: BackdropFilter(
+                                            filter: ImageFilter.blur(
+                                              sigmaX: 20,
+                                              sigmaY: 20,
                                             ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.lightBlue
-                                                  .withOpacity(0.25),
-                                              borderRadius:
-                                                  BorderRadius.circular(7),
-                                              border: Border.all(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 5,
+                                              ),
+                                              decoration: BoxDecoration(
                                                 color: Colors.lightBlue
-                                                    .withOpacity(0.3),
-                                                width: 1.5,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.blue
-                                                      .withOpacity(0.2),
-                                                  blurRadius: 30,
-                                                  offset: const Offset(0, 12),
+                                                    .withOpacity(0.25),
+                                                borderRadius:
+                                                    BorderRadius.circular(7),
+                                                border: Border.all(
+                                                  color: Colors.lightBlue
+                                                      .withOpacity(0.3),
+                                                  width: 1.5,
                                                 ),
-                                              ],
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.lightBlue.withOpacity(
-                                                    1,
-                                                  ),
-                                                  Colors.lightBlue.withOpacity(
-                                                    0.50,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.blue
+                                                        .withOpacity(0.2),
+                                                    blurRadius: 30,
+                                                    offset: const Offset(0, 12),
                                                   ),
                                                 ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.lightBlue.withOpacity(
+                                                      1,
+                                                    ),
+                                                    Colors.lightBlue.withOpacity(
+                                                      0.50,
+                                                    ),
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
                                               ),
-                                            ),
-                                            child: Text(
-                                              'write',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
+                                              child: Text(
+                                                'write',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    SizedBox(width: 5),
-                                    if (languagesList[i]['speak'])
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(7),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                            sigmaX: 20,
-                                            sigmaY: 20,
-                                          ),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 5,
+                                      SizedBox(width: 5),
+                                      if (languagesList[i]['speak'])
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(7),
+                                          child: BackdropFilter(
+                                            filter: ImageFilter.blur(
+                                              sigmaX: 20,
+                                              sigmaY: 20,
                                             ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.deepPurple
-                                                  .withOpacity(0.25),
-                                              borderRadius:
-                                                  BorderRadius.circular(7),
-                                              border: Border.all(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 5,
+                                              ),
+                                              decoration: BoxDecoration(
                                                 color: Colors.deepPurple
-                                                    .withOpacity(0.3),
-                                                width: 1.5,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.purple
-                                                      .withOpacity(0.2),
-                                                  blurRadius: 30,
-                                                  offset: const Offset(0, 12),
+                                                    .withOpacity(0.25),
+                                                borderRadius:
+                                                    BorderRadius.circular(7),
+                                                border: Border.all(
+                                                  color: Colors.deepPurple
+                                                      .withOpacity(0.3),
+                                                  width: 1.5,
                                                 ),
-                                              ],
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.deepPurple.withOpacity(
-                                                    1,
-                                                  ),
-                                                  Colors.deepPurple.withOpacity(
-                                                    0.50,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.purple
+                                                        .withOpacity(0.2),
+                                                    blurRadius: 30,
+                                                    offset: const Offset(0, 12),
                                                   ),
                                                 ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.deepPurple.withOpacity(
+                                                      1,
+                                                    ),
+                                                    Colors.deepPurple.withOpacity(
+                                                      0.50,
+                                                    ),
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
                                               ),
-                                            ),
-                                            child: Text(
-                                              'Speak',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
+                                              child: Text(
+                                                'Speak',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _deleteLanguage(
+                                              languagesList[i]['id'],
+                                              i,
+                                            );
+                                          });
+                                        },
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          color: Colors.white70,
+                                          size: 20,
+                                        ),
                                       ),
-                                    IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _deleteLanguage(
-                                            languagesList[i]['id'],
-                                            i,
-                                          );
-                                        });
-                                      },
-                                      icon: const Icon(
-                                        Icons.close_rounded,
-                                        color: Colors.white70,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                   ],
+                  SizedBox(height: languagesList.isNotEmpty ? 80 : 0),
                 ],
               ),
             ),
@@ -574,7 +580,7 @@ class _LanguagesState extends State<Languages> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: _addLanguage,
+                        onTap: addLanguage,
                         splashFactory: InkRipple.splashFactory,
                         splashColor: Colors.white.withOpacity(0.2),
                         highlightColor: Colors.white.withOpacity(0.1),

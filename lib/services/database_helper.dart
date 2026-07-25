@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "ResumeMaker.db";
-  static const _databaseVersion = 3;
+  static const _databaseVersion = 6; 
 
   // Table names
   static const tableProfile = 'profile';
@@ -17,6 +17,7 @@ class DatabaseHelper {
   static const tableProjects = 'projects';
   static const tableAppReferences = 'app_references';
   static const tableSkills = 'skills';
+  static const tableSavedResumes = 'saved_resumes';
 
   // Singleton class
   DatabaseHelper._privateConstructor();
@@ -46,6 +47,7 @@ class DatabaseHelper {
     tableProfile: '''
       CREATE TABLE $tableProfile (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         firstName TEXT,
         lastName TEXT,
         email TEXT,
@@ -62,12 +64,14 @@ class DatabaseHelper {
     tableAbout: '''
       CREATE TABLE $tableAbout (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         aboutText TEXT
       )
     ''',
     tableAwards: '''
       CREATE TABLE $tableAwards (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         title TEXT,
         issuer TEXT,
         year TEXT,
@@ -78,6 +82,7 @@ class DatabaseHelper {
     tableEducation: '''
       CREATE TABLE $tableEducation (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         school TEXT,
         field TEXT,
         degree TEXT,
@@ -92,6 +97,7 @@ class DatabaseHelper {
     tableExperience: '''
       CREATE TABLE $tableExperience (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         company TEXT,
         position TEXT,
         fromYear TEXT,
@@ -104,12 +110,14 @@ class DatabaseHelper {
     tableHobbies: '''
       CREATE TABLE $tableHobbies (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT NOT NULL
       )
     ''',
     tableLanguages: '''
       CREATE TABLE $tableLanguages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT NOT NULL,
         canRead INTEGER,
         canWrite INTEGER,
@@ -119,6 +127,7 @@ class DatabaseHelper {
     tableProjects: '''
       CREATE TABLE $tableProjects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT,
         role TEXT,
         description TEXT,
@@ -130,6 +139,7 @@ class DatabaseHelper {
     tableAppReferences: '''
       CREATE TABLE $tableAppReferences (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT,
         relationship TEXT,
         company TEXT,
@@ -140,8 +150,19 @@ class DatabaseHelper {
     tableSkills: '''
       CREATE TABLE $tableSkills (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
         name TEXT NOT NULL,
         proficiency TEXT NOT NULL
+      )
+    ''',
+    tableSavedResumes: '''
+      CREATE TABLE $tableSavedResumes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        resumeId INTEGER,
+        fileName TEXT NOT NULL,
+        filePath TEXT NOT NULL,
+        templateName TEXT NOT NULL,
+        createdAt TEXT NOT NULL
       )
     ''',
   };
@@ -175,39 +196,110 @@ class DatabaseHelper {
       if (!linkedinExists) await db.execute('ALTER TABLE $tableProfile ADD COLUMN linkedin TEXT');
       if (!githubExists) await db.execute('ALTER TABLE $tableProfile ADD COLUMN github TEXT');
     }
-    // Add other migration logic for future versions here
+    if (oldVersion < 4) {
+      // Version 4 adds the saved_resumes table
+      try {
+        await db.execute(_tableCreationScripts[tableSavedResumes]!);
+      } catch (e) {
+        print('Error creating saved_resumes table: $e');
+        // Table might already exist, which is fine
+      }
+    }
+    if (oldVersion < 5) {
+      // Version 5 adds resumeId to all data tables
+      final tablesToUpdate = [
+        tableProfile, tableAbout, tableAwards, tableEducation, tableExperience,
+        tableHobbies, tableLanguages, tableProjects, tableAppReferences, tableSkills,
+        tableSavedResumes
+      ];
+      for (final table in tablesToUpdate) {
+        var tableInfo = await db.rawQuery('PRAGMA table_info($table)');
+        bool resumeIdExists = tableInfo.any((col) => col['name'] == 'resumeId');
+        if (!resumeIdExists) {
+          await db.execute('ALTER TABLE $table ADD COLUMN resumeId INTEGER');
+        }
+      }
+    }
   }
 
   // Helper methods to insert, query, update, and delete.
 
-  /// Inserts a row into the specified [table]. Returns the new row's id.
+  // Inserts a row into the specified [table]. Returns the new row's id.
   Future<int> insert(String table, Map<String, dynamic> row) async {
     Database db = await instance.database;
     return await db.insert(table, row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  /// Queries all rows from the specified [table].
-  Future<List<Map<String, dynamic>>> queryAllRows(String table) async {
+  // Queries all rows from the specified [table].
+  Future<List<Map<String, dynamic>>> queryAllRows(String table,
+      {String? where,
+      List<dynamic>? whereArgs,
+      String? orderBy,
+      int? limit}) async {
     Database db = await instance.database;
-    return await db.query(table);
+    return await db.query(table,
+        where: where, whereArgs: whereArgs, orderBy: orderBy, limit: limit);
   }
 
-  /// Updates a row in the specified [table]. The map must contain an 'id' key.
+  // Updates a row in the specified [table]. The map must contain an 'id' key.
   Future<int> update(String table, Map<String, dynamic> row) async {
     Database db = await instance.database;
     int id = row['id'];
     return await db.update(table, row, where: 'id = ?', whereArgs: [id]);
   }
 
-  /// Deletes the row with the specified [id] from the [table].
+  // Updates a row in the specified [table] by resumeId.
+  Future<int> updateByResumeId(String table, Map<String, dynamic> row, int resumeId) async {
+    Database db = await instance.database;
+    return await db.update(table, row, where: 'resumeId = ?', whereArgs: [resumeId]);
+  }
+
+  // Deletes the row with the specified [id] from the [table].
   Future<int> delete(String table, int id) async {
     Database db = await instance.database;
     return await db.delete(table, where: 'id = ?', whereArgs: [id]);
   }
 
-  /// A generic method to clear all data from a table.
+  // Deletes a row by file path from the saved_resumes table
+  Future<int> deleteByPath(String table, String filePath) async {
+    Database db = await instance.database;
+    return await db.delete(table, where: 'filePath = ?', whereArgs: [filePath]);
+  }
+
+  // A generic method to clear all data from a table.
   Future<void> clearTable(String table) async {
     Database db = await instance.database;
     await db.delete(table);
+  }
+
+  /// Deletes all data associated with a specific resumeId from all tables.
+  Future<void> deleteAllDataForResume(int resumeId) async {
+    final db = await instance.database;
+    final batch = db.batch();
+    final whereClause = 'resumeId = ?';
+    final whereArgs = [resumeId];
+
+    // List of all tables that have resume data
+    final tables = [
+      tableProfile,
+      tableAbout,
+      tableAwards,
+      tableEducation,
+      tableExperience,
+      tableSkills,
+      tableProjects,
+      tableHobbies,
+      tableLanguages,
+      tableAppReferences,
+      tableSavedResumes,
+    ];
+
+    // Add a delete operation for each table to the batch
+    for (final table in tables) {
+      batch.delete(table, where: whereClause, whereArgs: whereArgs);
+    }
+
+    // Commit the batch operation
+    await batch.commit(noResult: true);
   }
 }

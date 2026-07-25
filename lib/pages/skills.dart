@@ -8,7 +8,16 @@ import 'package:resume_builder/services/database_helper.dart';
 
 class Skills extends StatefulWidget {
   final VoidCallback? onNext;
-  const Skills({super.key, this.onNext});
+  final int resumeId;
+  final String? originalFilePath;
+  final bool singlePageMode;
+  const Skills({
+    super.key,
+    this.onNext,
+    required this.resumeId,
+    this.originalFilePath,
+    this.singlePageMode = false,
+  });
 
   @override
   State<Skills> createState() => _SkillsState();
@@ -27,6 +36,7 @@ class _SkillsState extends State<Skills> {
     'Expert',
   ];
   final int pageindex = 0;
+  bool isDropdownOpen = false;
 
   @override
   void initState() {
@@ -35,7 +45,11 @@ class _SkillsState extends State<Skills> {
   }
 
   void _loadSkills() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableSkills);
+    final allRows = await dbHelper.queryAllRows(
+      DatabaseHelper.tableSkills,
+      where: 'resumeId = ?',
+      whereArgs: [widget.resumeId],
+    );
     if (mounted) {
       setState(() {
         skills.clear();
@@ -65,6 +79,7 @@ class _SkillsState extends State<Skills> {
       Map<String, dynamic> row = {
         'name': newSkillName,
         'proficiency': selectedProficiency,
+        'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableSkills, row);
       row['id'] = id;
@@ -186,7 +201,9 @@ class _SkillsState extends State<Skills> {
                                 const SizedBox(width: 12),
                                 SizedBox(
                                   width: 140,
-                                  child: Container(
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 4,
@@ -194,31 +211,61 @@ class _SkillsState extends State<Skills> {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: isDropdownOpen
+                                            ? Colors.white.withOpacity(0.9)
+                                            : Colors.white.withOpacity(0.3),
+                                        width: isDropdownOpen ? 1.5 : 1.0,
                                       ),
                                     ),
                                     child: DropdownButtonHideUnderline(
                                       child: DropdownButton2<String>(
                                         isExpanded: true,
                                         dropdownStyleData: DropdownStyleData(
+                                          maxHeight: 260,
+                                          elevation: 0,
+                                          offset: const Offset(0, 6),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
-                                              14,
+                                              18,
                                             ),
                                             gradient: LinearGradient(
-                                              colors: [
-                                                Color.fromARGB(
-                                                  255,
-                                                  152,
-                                                  146,
-                                                  244,
-                                                ),
-                                                Color(0xffe4d8fd),
-                                                Color(0xff9b8fff),
-                                              ],
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
+                                              colors: [
+                                                Colors.white.withOpacity(0.25),
+                                                Colors.white.withOpacity(0.08),
+                                              ],
                                             ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.35,
+                                              ),
+                                              width: 1,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.deepPurple
+                                                    .withOpacity(0.25),
+                                                blurRadius: 24,
+                                                offset: const Offset(0, 12),
+                                              ),
+                                            ],
+                                          ),
+                                          scrollbarTheme: ScrollbarThemeData(
+                                            thickness:
+                                                MaterialStateProperty.all(3),
+                                            radius: const Radius.circular(3),
+                                            thumbColor:
+                                                MaterialStateProperty.all<
+                                                  Color
+                                                >(
+                                                  const Color.fromARGB(
+                                                    108,
+                                                    255,
+                                                    255,
+                                                    255,
+                                                  ),
+                                                ),
                                           ),
                                         ),
                                         hint: Text(
@@ -227,16 +274,52 @@ class _SkillsState extends State<Skills> {
                                             color: Colors.white.withOpacity(
                                               0.8,
                                             ),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         value: selectedProficiency,
-                                        items: proficiencyLevels.map((m) {
+                                        items: proficiencyLevels.asMap().entries.map((
+                                          entry,
+                                        ) {
+                                          int index = entry.key;
+                                          String item = entry.value;
                                           return DropdownMenuItem<String>(
-                                            value: m,
-                                            child: Text(
-                                              m,
-                                              style: TextStyle(
-                                                color: Colors.white,
+                                            value: item,
+                                            child: TweenAnimationBuilder<double>(
+                                              tween: Tween<double>(
+                                                begin: 0.0,
+                                                end: 1.0,
+                                              ),
+                                              duration: Duration(
+                                                milliseconds:
+                                                    350 + (index * 40),
+                                              ),
+                                              curve: Curves.easeOutBack,
+                                              builder: (context, value, child) {
+                                                return Opacity(
+                                                  opacity: value.clamp(
+                                                    0.0,
+                                                    1.0,
+                                                  ),
+                                                  child: Transform.translate(
+                                                    offset: Offset(
+                                                      0,
+                                                      -10 * (1 - value),
+                                                    ),
+                                                    child: child,
+                                                  ),
+                                                );
+                                              },
+                                              child: Text(
+                                                item,
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                      .withOpacity(0.95),
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 14,
+                                                  letterSpacing: 0.3,
+                                                ),
                                               ),
                                             ),
                                           );
@@ -248,8 +331,24 @@ class _SkillsState extends State<Skills> {
                                             );
                                           }
                                         },
-                                        style: const TextStyle(
-                                          color: Colors.white,
+                                        onMenuStateChange: (isOpen) {
+                                          setState(() {
+                                            isDropdownOpen = isOpen;
+                                          });
+                                        },
+                                        iconStyleData: IconStyleData(
+                                          icon: AnimatedRotation(
+                                            turns: isDropdownOpen ? 0.5 : 0.0,
+                                            duration: const Duration(
+                                              milliseconds: 260,
+                                            ),
+                                            curve: Curves.easeOutCubic,
+                                            child: const Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              color: Colors.white,
+                                              size: 22,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -321,8 +420,12 @@ class _SkillsState extends State<Skills> {
                                     ],
                                   ),
                                 );
+<<<<<<< HEAD
                               }),
 
+=======
+                              }).toList(),
+>>>>>>> 49f9340c9c57c25cf275ba03b107b49a5783707b
                               const SizedBox(height: 24),
                             ],
                           ],
@@ -343,20 +446,33 @@ class _SkillsState extends State<Skills> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  if (skills.isNotEmpty) {
-                    bool next = func.unlockpage(pageindex);
+                  if (skills.isNotEmpty || widget.singlePageMode) {
+                    func.unlockpage(pageindex);
 
-                    if (next && widget.onNext != null) {
-                      Navigator.of(context).push(
+                    // Conditional navigation based on mode
+                    if (widget.singlePageMode) {
+                      // Single page mode: pop back or use callback
+                      if (widget.onNext != null) {
+                        widget.onNext!.call();
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    } else {
+                      // Multi-page mode: navigate to ChooseTemplate
+                      Navigator.push(
+                        context,
                         MaterialPageRoute(
-                          builder: (context) => ChooseTemplate(),
+                          builder: (context) => ChooseTemplate(
+                            resumeId: widget.resumeId,
+                            originalFilePath: widget.originalFilePath,
+                          ),
                         ),
                       );
                     }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Please enter at list one Skill...'),
+                      const SnackBar(
+                        content: Text('Please add at least one skill.'),
                       ),
                     );
                   }
@@ -380,7 +496,7 @@ class _SkillsState extends State<Skills> {
                     color: Colors.white,
                   ),
                 ),
-                child: const Text('Next'),
+                child: Text(widget.singlePageMode ? 'Save' : 'Next'),
               ),
             ),
             const SizedBox(width: 12),

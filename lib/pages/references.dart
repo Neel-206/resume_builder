@@ -7,7 +7,9 @@ import 'package:resume_builder/services/database_helper.dart';
 class References extends StatefulWidget {
   final VoidCallback? onNext;
 
-  const References({super.key, this.onNext});
+  final int resumeId;
+
+  const References({super.key, this.onNext, required this.resumeId, required bool singlePageMode});
 
   @override
   State<References> createState() => _ReferencesState();
@@ -22,16 +24,20 @@ class _ReferencesState extends State<References> {
   final TextEditingController companyController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  late int resumeId;
   final int pageindex = 7;
   @override
   void initState() {
     super.initState();
+    resumeId = widget.resumeId;
     _loadReferences();
   }
-
+  
   void _loadReferences() async {
     final allRows = await dbHelper.queryAllRows(
       DatabaseHelper.tableAppReferences,
+      where: 'resumeId = ?',
+      whereArgs: [widget.resumeId],
     );
     if (mounted) {
       setState(() {
@@ -42,13 +48,19 @@ class _ReferencesState extends State<References> {
   }
 
   void _addReference() async {
-    if (nameController.text.trim().isNotEmpty) {
+    // Allow adding reference even if only some fields are filled
+    if (nameController.text.trim().isNotEmpty || 
+        relationshipController.text.trim().isNotEmpty ||
+        companyController.text.trim().isNotEmpty ||
+        phoneController.text.trim().isNotEmpty ||
+        emailController.text.trim().isNotEmpty) {
       Map<String, dynamic> row = {
         'name': nameController.text,
         'relationship': relationshipController.text,
         'company': companyController.text,
         'phone': phoneController.text,
         'email': emailController.text,
+        'resumeId': widget.resumeId,
       };
       final id = await dbHelper.insert(DatabaseHelper.tableAppReferences, row);
       row['id'] = id;
