@@ -8,7 +8,12 @@ class profilepage extends StatefulWidget {
   final VoidCallback? onNext;
   final int resumeId;
   final bool singlePageMode;
-  const profilepage({super.key, this.onNext, required this.resumeId, this.singlePageMode = false});
+  const profilepage({
+    super.key,
+    this.onNext,
+    required this.resumeId,
+    this.singlePageMode = false,
+  });
 
   @override
   State<profilepage> createState() => _profilepageState();
@@ -28,19 +33,23 @@ class _profilepageState extends State<profilepage> {
   final TextEditingController pincodeController = TextEditingController();
   final TextEditingController linkedinController = TextEditingController();
   final TextEditingController githubController = TextEditingController();
-  final int pageindex = 0; 
+  final int pageindex = 0;
   late final int resumeId;
   bool showAdditionalFields = false;
   final dbHelper = DatabaseHelper.instance;
-  final TextInputType? keyboardType = null; 
+  final TextInputType? keyboardType = null;
   void initState() {
-    resumeId = widget.resumeId; 
+    resumeId = widget.resumeId;
     super.initState();
     _loadProfileData();
   }
 
   void _loadProfileData() async {
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProfile, where: 'resumeId = ?', whereArgs: [widget.resumeId]);
+    final allRows = await dbHelper.queryAllRows(
+      DatabaseHelper.tableProfile,
+      where: 'resumeId = ?',
+      whereArgs: [widget.resumeId],
+    );
     if (allRows.isNotEmpty) {
       if (mounted) {
         final profile = allRows.first;
@@ -325,10 +334,10 @@ class _profilepageState extends State<profilepage> {
           onPressed: () {
             if (form_Key.currentState?.validate() ?? false) {
               _saveProfileData();
-             bool next = func.unlockpage(pageindex);
-              
-              if(next && widget.onNext != null){
-                widget.onNext?.call();// Navigate to next page
+              bool next = func.unlockpage(pageindex);
+
+              if (next && widget.onNext != null) {
+                widget.onNext?.call(); // Navigate to next page
               }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -338,11 +347,6 @@ class _profilepageState extends State<profilepage> {
               );
             }
           },
-<<<<<<< HEAD
-=======
-          //child: Text('Next'),
-          child: Text(widget.singlePageMode ? 'Save' : 'Next'),
->>>>>>> 49f9340c9c57c25cf275ba03b107b49a5783707b
           style: ElevatedButton.styleFrom(
             minimumSize: Size(double.infinity, 62),
             backgroundColor: Color.fromARGB(255, 111, 101, 247),
@@ -359,7 +363,7 @@ class _profilepageState extends State<profilepage> {
               color: Colors.white,
             ),
           ),
-          child: Text('Next'),
+          child: Text(widget.singlePageMode ? 'Save' : 'Next'),
         ),
       ),
     );
@@ -381,7 +385,11 @@ class _profilepageState extends State<profilepage> {
       'resumeId': resumeId,
     };
 
-    final allRows = await dbHelper.queryAllRows(DatabaseHelper.tableProfile, where: 'resumeId = ?', whereArgs: [resumeId]);
+    final allRows = await dbHelper.queryAllRows(
+      DatabaseHelper.tableProfile,
+      where: 'resumeId = ?',
+      whereArgs: [resumeId],
+    );
     if (allRows.isEmpty) {
       await dbHelper.insert(DatabaseHelper.tableProfile, row);
     } else {

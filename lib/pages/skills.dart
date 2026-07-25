@@ -420,12 +420,7 @@ class _SkillsState extends State<Skills> {
                                     ],
                                   ),
                                 );
-<<<<<<< HEAD
-                              }),
-
-=======
                               }).toList(),
->>>>>>> 49f9340c9c57c25cf275ba03b107b49a5783707b
                               const SizedBox(height: 24),
                             ],
                           ],
