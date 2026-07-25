@@ -569,7 +569,7 @@ class UniqueTemplate {
       );
     }
     graphics.drawString(
-      '${profileData?.linkedin ?? ''}',
+      profileData?.linkedin ?? '',
       contactFont,
       brush: PdfBrushes.black,
       bounds: Rect.fromLTRB(
@@ -782,7 +782,7 @@ class UniqueTemplate {
             project.year != null &&
             project.year!.isNotEmpty) {
           graphics.drawString(
-            project.name! + '(' + project.year! + ')',
+            '${project.name!}(${project.year!})',
             mainSubHeaderFont,
             brush: PdfSolidBrush(mainHeaderColor),
             bounds: Rect.fromLTWH(mainContentX, mainY, mainContentWidth, 12),

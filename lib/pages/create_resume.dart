@@ -69,6 +69,7 @@ class _CreateResumeState extends State<CreateResume> {
     });
   }
 
+  @override
   void dispose() {
     tabScrollController.dispose();
     super.dispose();

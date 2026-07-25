@@ -15,7 +15,7 @@ class AppTextField extends StatelessWidget {
   final Widget? suffixIcon;
 
   const AppTextField({
-    Key? key,
+    super.key,
     this.controller,
     this.label,
     this.hint,
@@ -26,7 +26,7 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.prefixIcon,
     this.suffixIcon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

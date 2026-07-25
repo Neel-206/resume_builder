@@ -327,7 +327,6 @@ class _profilepageState extends State<profilepage> {
               );
             }
           },
-          child: Text('Next'),
           style: ElevatedButton.styleFrom(
             minimumSize: Size(double.infinity, 62),
             backgroundColor: Color.fromARGB(255, 111, 101, 247),
@@ -344,6 +343,7 @@ class _profilepageState extends State<profilepage> {
               color: Colors.white,
             ),
           ),
+          child: Text('Next'),
         ),
       ),
     );
